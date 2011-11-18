@@ -311,7 +311,7 @@ class Magill:
         smudge_parts_a_l = []
         smudge_parts_a_r = []
         enough_smudge_parts_a = dsp.split(enough_smudge, dsp.mstf(40))
-        for part in enough_smudge_parts_a:
+        for index, part in enumerate(enough_smudge_parts_a):
             if index % 2:
                 smudge_parts_a_l.append(part)
             else:
@@ -320,7 +320,7 @@ class Magill:
         smudge_parts_b_r = []
         smudge_parts_b_r = []
         enough_smudge_parts_b = dsp.split(enough_smudgy, dsp.mstf(40))
-        for part in enough_smudge_parts_b:
+        for index, part in enumerate(enough_smudge_parts_b):
             if index % 2:
                 smudge_parts_b_l.append(part)
             else:
