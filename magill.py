@@ -42,34 +42,34 @@ def main(out=''):
     out += magill.wesbreak()
 
     # Song
-    dsp.beat = dsp.bpm2frames(88.0)
-    out += magill.song()
-    out += magill.preintroC(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.preintroC(magill.ad.data)
+    #dsp.beat = dsp.bpm2frames(80.0)
+    #out += magill.song()
+    #out += magill.preintroC(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.preintroC(magill.ad.data)
 
-    dsp.beat = dsp.bpm2frames(20.0)
-    end = dsp.amp(magill.guitarphase(magill.ad.data), 30.0)
-    end += dsp.amp(dsp.mix([magill.guitarphase(magill.ad.data), magill.guitarphase(dsp.transpose(magill.ad.data, 0.75))]), 30.0)
-    end += dsp.amp(magill.guitarphase(magill.ad.data), 40.0)
-    end += dsp.amp(magill.guitarphase(magill.ad.data), 50.0)
-    end = dsp.env(end, 'line')
-    end += dsp.amp(magill.guitarphase(magill.ad.data), 100.0)
-    end = dsp.amp(end, 0.3)
-    cap = dsp.cut(end, dsp.flen(end) - dsp.stf(1), dsp.stf(1))
+    #dsp.beat = dsp.bpm2frames(20.0)
+    #end = dsp.amp(magill.guitarphase(magill.ad.data), 30.0)
+    #end += dsp.amp(dsp.mix([magill.guitarphase(magill.ad.data), magill.guitarphase(dsp.transpose(magill.ad.data, 0.75))]), 30.0)
+    #end += dsp.amp(magill.guitarphase(magill.ad.data), 40.0)
+    #end += dsp.amp(magill.guitarphase(magill.ad.data), 50.0)
+    #end = dsp.env(end, 'line')
+    #end += dsp.amp(magill.guitarphase(magill.ad.data), 100.0)
+    #end = dsp.amp(end, 0.3)
+    #cap = dsp.cut(end, dsp.flen(end) - dsp.stf(1), dsp.stf(1))
 
     # Teoh
-    end = dsp.mix([dsp.pad(dsp.cut(magill.teoh.data, dsp.stf(0), dsp.flen(magill.teoh.data) - dsp.stf(0)), 0, dsp.stf(10)), end], False)
-    out += end + cap
-    dsp.beat = dsp.bpm2frames(90.0)
-    out += magill.preintroC(dsp.transpose(cap, 0.9))
+    #end = dsp.mix([dsp.pad(dsp.cut(magill.teoh.data, dsp.stf(0), dsp.flen(magill.teoh.data) - dsp.stf(0)), 0, dsp.stf(10)), end], False)
+    #out += end + cap
+    #dsp.beat = dsp.bpm2frames(90.0)
+    #out += magill.preintroC(dsp.transpose(cap, 0.9))
 
     # All Those I Know
     #out += magill.all.data
@@ -308,6 +308,10 @@ class Magill:
         #p['voices'] = [dsp.pad('', 0, dsp.stf(10))]
         #ga = dsp.mix([self.sing(p) for i in range(20)], False)
         #gb = dsp.env(dsp.amp(dsp.mix([self.sing(p) for i in range(20)], False), 30.0), 'line')
+
+        wesin = dsp.mix([dsp.pulsar(wes) for i in range(20)], True, 3.5)
+        wesout = dsp.mix([dsp.pulsar(wes) for i in range(20)], True, 3.5)
+        out = dsp.mix([wesin, wesout])
 
         #out += dsp.mix([ga, dsp.amp(gb, 0.1)], False)
         out += wes
