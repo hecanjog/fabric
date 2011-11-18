@@ -14,7 +14,9 @@ def main(out=''):
     score = Score()
     dsp.beat = dsp.bpm2frames(88.0)
 
-    out += score.opening() 
+    out += dsp.mix([score.opening(dsp.stf(60), 'random') for i in range(3)])
+    out += dsp.mix([score.opening(dsp.stf(60), 'line') for i in range(3)])
+    out += dsp.mix([score.opening(dsp.stf(60), 'sine') for i in range(3)])
 
     out = dsp.write(out, 'render', True)
 
@@ -28,14 +30,14 @@ class Score:
     """ structure, score """
 
     def __init__(self):
-        # preload sounds
-        self.test = dsp.read('stereotest.wav')
-
         # Set audio params
-        dsp.audio_params = self.test.params
+        dsp.audio_params = dsp.default_params 
 
-    def opening(self, out=''):
-        out += self.test.data
+    def opening(self, length, type='sine', out=''):
+        salty = random.random() * 0.01
+        low = dsp.mix([dsp.env(dsp.tone(length, (i+1)*50.0 + salty, type, random.random() * 0.2), 'sine') for i in range(6)])
+        mid = dsp.mix([dsp.env(dsp.tone(length, (i+1)*75.1 + salty, type, random.random() * 0.2), 'sine') for i in range(6)])
+        out += dsp.mix([low,mid])
         
         return out
 
