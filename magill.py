@@ -335,7 +335,7 @@ class Magill:
 
         #out += dsp.pulsar(dsp.mix([smudge_first_l, smudge_first_r, smudge_second_l, smudge_second_r]), (0.98, 1.01, 'random'))
 
-        out += dsp.pad('', dsp.mstf(3000), dsp.stf(0))
+        #out += dsp.pad('', dsp.mstf(3000), dsp.stf(0))
         out += dsp.mix([enough_smudge, enough_smudgy, dsp.env(enough_enough, 'phasor')])
 
         #out += dsp.mix([ga, dsp.amp(gb, 0.1)], False)
@@ -433,7 +433,6 @@ class Magill:
         out += self.preintroC(g4)
 
         # would you find
-        dsp.beat = dsp.bpm2frames(88.0)
         p['voicespeed'] = 1.5 
         p['voices'] = [b_verse_b, c_verse_b]
         p['guitars'] = ([g2, g4], [g1, g2])
