@@ -35,7 +35,7 @@ class Score:
         dsp.audio_params = dsp.default_params 
 
     def pings(self, length, out=''):
-        tone = dsp.tone(dsp.mstf(30), 16000, 'sine', 0.3)
+        tone = dsp.tone(dsp.mstf(30), 12000, 'sine', 0.3)
         out += ''.join([dsp.env(tone, 'sine') for i in range(length / dsp.flen(tone))])
         return out
 
