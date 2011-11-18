@@ -37,7 +37,7 @@ def main(out=''):
     # Song
     dsp.beat = dsp.bpm2frames(86.0)
     song = magill.song()
-    song = dsp.pad(song, 0, dsp.stf(4))
+    #song = dsp.pad(song, 0, dsp.stf(4))
 
     phaset = dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), 'phasor')
     phaset += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.99, 1.01, 'sine')), 'line')
@@ -310,30 +310,30 @@ class Magill:
         enough_smudge = dsp.mix([dsp.pulsar(random.choice([wd, we]), (1.0, 1.07, 'random'), (0.0, 1.0, 'random'), random.random()) for i in range(40)], True, 8)
         enough_smudgy = dsp.mix([dsp.pulsar(random.choice([wd, we]), (1.0, 1.07, 'random'), (0.0, 1.0, 'random'), random.random()) for i in range(40)], True, 8)
 
-        smudge_parts_a_l = []
-        smudge_parts_a_r = []
-        enough_smudge_parts_a = dsp.split(wf, dsp.mstf(40))
-        for index, part in enumerate(enough_smudge_parts_a):
-            if index % 2:
-                smudge_parts_a_l.append(part)
-            else:
-                smudge_parts_a_r.append(part)
+        #smudge_parts_a_l = []
+        #smudge_parts_a_r = []
+        #enough_smudge_parts_a = dsp.split(wf, dsp.mstf(40))
+        #for index, part in enumerate(enough_smudge_parts_a):
+            #if index % 2:
+                #smudge_parts_a_l.append(part)
+            #else:
+                #smudge_parts_a_r.append(part)
 
-        smudge_parts_b_l = []
-        smudge_parts_b_r = []
-        enough_smudge_parts_b = dsp.split(enough_smudgy, dsp.mstf(40))
-        for index, part in enumerate(enough_smudge_parts_b):
-            if index % 2:
-                smudge_parts_b_l.append(part)
-            else:
-                smudge_parts_b_r.append(part)
+        #smudge_parts_b_l = []
+        #smudge_parts_b_r = []
+        #enough_smudge_parts_b = dsp.split(enough_smudgy, dsp.mstf(40))
+        #for index, part in enumerate(enough_smudge_parts_b):
+            #if index % 2:
+                #smudge_parts_b_l.append(part)
+            #else:
+                #smudge_parts_b_r.append(part)
 
-        smudge_first_l = dsp.mix([''.join([dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 0.0) for part in smudge_parts_a_l]) for i in range(4)]) 
-        smudge_second_l = dsp.mix([''.join([dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 0.0) for part in smudge_parts_b_l]) for i in range(4)]) 
-        smudge_first_r = dsp.mix([''.join([dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 1.0) for part in smudge_parts_a_r]) for i in range(4)]) 
-        smudge_second_r = dsp.mix([''.join([dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 1.0) for part in smudge_parts_b_r]) for i in range(4)]) 
+        #smudge_first_l = dsp.mix([''.join([dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 0.0) for part in smudge_parts_a_l]) for i in range(4)]) 
+        #smudge_second_l = dsp.mix([''.join([dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 0.0) for part in smudge_parts_b_l]) for i in range(4)]) 
+        #smudge_first_r = dsp.mix([''.join([dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 1.0) for part in smudge_parts_a_r]) for i in range(4)]) 
+        #smudge_second_r = dsp.mix([''.join([dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 1.0) for part in smudge_parts_b_r]) for i in range(4)]) 
 
-        out += dsp.pulsar(dsp.mix([smudge_first_l, smudge_first_r, smudge_second_l, smudge_second_r]), (0.98, 1.01, 'random'))
+        #out += dsp.pulsar(dsp.mix([smudge_first_l, smudge_first_r, smudge_second_l, smudge_second_r]), (0.98, 1.01, 'random'))
 
         out += dsp.pad('', dsp.mstf(3000), dsp.stf(0))
         out += dsp.mix([enough_smudge, enough_smudgy, dsp.env(enough_enough, 'phasor')])
@@ -507,13 +507,13 @@ class Magill:
         hats = dsp.mix([dsp.amp(''.join(hatz), 1.2), hats])
 
         jangle = dsp.mix([hats, dsp.amp(big, 0.5), dsp.amp(dings, 0.5)])
-        out += dsp.mix([dsp.pulsar(dsp.mix([big, jangle]), (0.99, 1.01, 'random'), (0.9, 1.0, 'random'), random.random()) for i in range(10)], False, 3.0)
+        out += dsp.mix([dsp.pulsar(dsp.mix([big, jangle]), (0.99, 1.01, 'random'), (0.9, 1.0, 'random'), random.random()) for i in range(10)], False, 2.0)
 
         # dings
         p['voicerand'] = True
         p['voicespeed'] = 1.0
         p['guitars'] = ([g5], [g2])
-        p['voices'] = [dsp.pad('', dsp.stf(4), 0)]
+        p['voices'] = [dsp.pad('', dsp.stf(14), 0)]
         out += dsp.env(self.sing(p), 'phasor')
 
         return out
