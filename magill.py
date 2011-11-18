@@ -69,7 +69,7 @@ def main(out=''):
     # All Those I Know
     out += magill.all.data
 
-    out = dsp.write(out, 'magill', False)
+    out = dsp.write(out, 'magill', True)
 
     # Show render time
     timer = time.time() - timer
