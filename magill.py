@@ -326,10 +326,10 @@ class Magill:
             else:
                 smudge_parts_b_r.append(part)
 
-        smudge_first_l = dsp.mix([[dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 0.0) for part in smudge_parts_a_l] for i in range(4)]) 
-        smudge_second_l = dsp.mix([[dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 0.0) for part in smudge_parts_b_l] for i in range(4)]) 
-        smudge_first_r = dsp.mix([[dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 1.0) for part in smudge_parts_a_r] for i in range(4)]) 
-        smudge_second_r = dsp.mix([[dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 1.0) for part in smudge_parts_b_r] for i in range(4)]) 
+        smudge_first_l = dsp.mix([''.join([dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 0.0) for part in smudge_parts_a_l]) for i in range(4)]) 
+        smudge_second_l = dsp.mix([''.join([dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 0.0) for part in smudge_parts_b_l]) for i in range(4)]) 
+        smudge_first_r = dsp.mix([''.join([dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 1.0) for part in smudge_parts_a_r]) for i in range(4)]) 
+        smudge_second_r = dsp.mix([''.join([dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 1.0) for part in smudge_parts_b_r]) for i in range(4)]) 
 
         out += dsp.mix([smudge_first_l, smudge_first_r, smudge_second_l, smudge_second_r])
 
