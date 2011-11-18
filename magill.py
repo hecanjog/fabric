@@ -42,6 +42,7 @@ def main(out=''):
     out += magill.wesbreak()
 
     # Song
+    dsp.beat = dsp.bpm2frames(88.0)
     out += magill.song()
     out += magill.preintroC(magill.ad.data)
     out += magill.guitarphase(magill.ad.data)
