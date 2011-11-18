@@ -308,7 +308,31 @@ class Magill:
         enough_smudge = dsp.mix([dsp.pulsar(random.choice([wd, we]), (1.0, 1.07, 'random'), (0.0, 1.0, 'random'), random.random()) for i in range(40)], True, 8)
         enough_smudgy = dsp.mix([dsp.pulsar(random.choice([wd, we]), (1.0, 1.07, 'random'), (0.0, 1.0, 'random'), random.random()) for i in range(40)], True, 8)
 
-        #out += enough_smudge
+        smudge_parts_a_l = []
+        smudge_parts_a_r = []
+        enough_smudge_parts_a = dsp.split(enough_smudge, dsp.mstf(40))
+        for part in enough_smudge_parts_a:
+            if index % 2:
+                smudge_parts_a_l.append(part)
+            else:
+                smudge_parts_a_r.append(part)
+
+        smudge_parts_b_r = []
+        smudge_parts_b_r = []
+        enough_smudge_parts_b = dsp.split(enough_smudgy, dsp.mstf(40))
+        for part in enough_smudge_parts_b:
+            if index % 2:
+                smudge_parts_b_l.append(part)
+            else:
+                smudge_parts_b_r.append(part)
+
+        smudge_first_l = dsp.mix([[dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 0.0) for part in smudge_parts_a_l] for i in range(4)]) 
+        smudge_second_l = dsp.mix([[dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 0.0) for part in smudge_parts_b_l] for i in range(4)]) 
+        smudge_first_r = dsp.mix([[dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 1.0) for part in smudge_parts_a_r] for i in range(4)]) 
+        smudge_second_r = dsp.mix([[dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 1.0) for part in smudge_parts_b_r] for i in range(4)]) 
+
+        out += dsp.mix([smudge_first_l, smudge_first_r, smudge_second_l, smudge_second_r])
+
         out += dsp.pad('', dsp.mstf(3000), dsp.stf(0))
         out += dsp.mix([enough_smudge, enough_smudgy, dsp.env(enough_enough, 'phasor')])
 
@@ -456,7 +480,7 @@ class Magill:
         p['voicespeed'] = 2.6
         p['voices'] = [dsp.amp(b_chorus_a, 0.9), dsp.amp(c_chorus_a, 0.4)]
         p['guitars'] = ([g1], [g1, g3])
-        big = dsp.cut(self.sing(p), 0, dsp.stf(4))
+        big = dsp.cut(self.sing(p), 0, dsp.stf(8))
 
         snd = {'ad': self.ad.data }
         dinggroup = [
@@ -495,7 +519,7 @@ class Magill:
         p['voicespeed'] = 3.6
         p['voices'] = [dsp.amp(b_chorus_c, 1.2), dsp.amp(c_chorus_c, 0.8)]
         p['guitars'] = ([g1], [g3])
-        big = dsp.cut(self.sing(p), 0, dsp.stf(4))
+        big = dsp.cut(self.sing(p), 0, dsp.stf(6))
 
         dinggroup = [
             self.patterns.dingstreamA(snd, dsp.flen(big), 0.5, 2.667 * 2),
