@@ -36,15 +36,17 @@ def main(out=''):
 
     # Song
     dsp.beat = dsp.bpm2frames(86.0)
-    out += magill.song()
-    #out += magill.preintroC(magill.ad.data)
+    song = magill.song()
+    song = dsp.pad(song, 0, dsp.stf(4))
 
     phaset = dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), 'phasor')
     phaset += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.99, 1.01, 'sine')), 'line')
     phaset += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.99, 1.01, 'sine')), 'sine')
     dsp.beat = dsp.bpm2frames(40.0)
     phaset += dsp.env(dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.25)), 'sine'), 'line')
-    out += dsp.mix([dsp.pulsar(phaset, (0.99, 1.0 + (random.random() * 0.06), 'random'), (0.7, 1.0, 'line'), random.random()) for i in range(10)], False, 12.0)
+    phaset = dsp.mix([dsp.pulsar(phaset, (0.99, 1.0 + (random.random() * 0.06), 'random'), (0.9, 1.0, 'line'), random.random()) for i in range(20)], False, 20.0)
+
+    out += dsp.mix([song, phaset], False)
 
     out += magill.wesbreak()
 
@@ -476,7 +478,7 @@ class Magill:
         out += self.preintroC(dsp.transpose(g5, 0.5))
 
         # should we all wake up
-        dsp.beat = dsp.bpm2frames(84.0)
+        dsp.beat = dsp.bpm2frames(88.0)
         p['voicespeed'] = 2.6
         p['voices'] = [dsp.amp(b_chorus_a, 0.9), dsp.amp(c_chorus_a, 0.4)]
         p['guitars'] = ([g1], [g1, g3])
@@ -501,36 +503,18 @@ class Magill:
         numhats = dsp.flen(big) / (dsp.beat / 3)
         hat = dsp.alias(dsp.cut(self.ad.data, 0, dsp.mstf(30)))
         nohat = dsp.pad('', dsp.mstf(30), 0)
-        hatz = [dsp.pad(dsp.pulsar(random.choice([dsp.alias(hat), nohat, hat, hat])), 0, (dsp.beat / 3) - dsp.mstf(30)) for i in range(numhats)]
+        hatz = [dsp.pad(dsp.pulsar(random.choice([dsp.alias(hat), nohat, hat, hat, hat, hat])), 0, (dsp.beat / 3) - dsp.mstf(30)) for i in range(numhats)]
         hats = dsp.mix([dsp.amp(''.join(hatz), 1.2), hats])
 
-        out += dsp.mix([hats, dsp.amp(big, 0.5), dsp.amp(dings, 0.5)])
+        jangle = dsp.mix([hats, dsp.amp(big, 0.5), dsp.amp(dings, 0.5)])
+        out += dsp.mix([dsp.pulsar(jangle, (0.98, 1.01, 'random'), (0.9, 1.0, 'random'), random.random()) for i in range(10)], False, 4.0)
 
         # dings
         p['voicerand'] = True
         p['voicespeed'] = 1.0
         p['guitars'] = ([g5], [g2])
-        p['voices'] = [dsp.pad('', dsp.stf(2), 0)]
-        out += self.sing(p)
-
-        # should we all wake up
-        #dsp.beat = dsp.bpm2frames(90.0)
-        #p['voicerand'] = False 
-        #p['voicespeed'] = 3.6
-        #p['voices'] = [dsp.amp(b_chorus_c, 1.2), dsp.amp(c_chorus_c, 0.8)]
-        #p['guitars'] = ([g1], [g3])
-        #big = self.sing(p)
-
-        #dinggroup = [
-            #self.patterns.dingstreamA(snd, dsp.flen(big), 0.5, 2.667 * 2),
-            #self.patterns.dingstreamA(snd, dsp.flen(big), 0.33333, 2.667 * 2),
-            #self.patterns.dingstreamA(snd, dsp.flen(big), 0.5, 2.667, 1.2),
-            #self.patterns.dingstreamA(snd, dsp.flen(big), 0.75, 2.667),
-            #self.patterns.dingstreamA(snd, dsp.flen(big), 1.25, 2.667, 1.1),
-            #]
-        #dings = dsp.fill(dsp.mix(dinggroup), dsp.flen(big))
-
-        #out += dsp.mix([big, dsp.amp(dings, 0.5)])
+        p['voices'] = [dsp.pad('', dsp.stf(4), 0)]
+        out += dsp.env(self.sing(p), 'phasor')
 
         return out
 
