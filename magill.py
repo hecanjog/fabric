@@ -16,35 +16,37 @@ def main(out=''):
     dsp.beat = dsp.bpm2frames(88.0)
 
     # Should We All Wake Up
-    out += magill.tmp.data
+    #out += magill.tmp.data
 
     # prelude
-    out += magill.preintroA(magill.ac.data)
-    dsp.beat = dsp.bpm2frames(78.0)
-    out += magill.guitarphase(magill.ac.data)
-    dsp.beat = dsp.bpm2frames(48.0)
-    out += magill.preintroB(magill.ac.data)
-    dsp.beat = dsp.bpm2frames(28.0)
-    out += magill.preintroB(magill.ac.data)
-    dsp.beat = dsp.bpm2frames(88.0)
+    #out += magill.preintroA(magill.ac.data)
+    #dsp.beat = dsp.bpm2frames(78.0)
+    #out += magill.guitarphase(magill.ac.data)
+    #dsp.beat = dsp.bpm2frames(48.0)
+    #out += magill.preintroB(magill.ac.data)
+    #dsp.beat = dsp.bpm2frames(28.0)
+    #out += magill.preintroB(magill.ac.data)
+    #dsp.beat = dsp.bpm2frames(88.0)
 
-    # Sparkle motion
-    intro_b = dsp.mix([magill.introA() for i in range(12)], False, 4.0)
-    intro_b += magill.preintroC(magill.ad.data)
-    intro_b += dsp.mix([magill.introB() for i in range(12)], True, 4.0)
-    out += intro_b
+    ## Sparkle motion
+    #intro_b = dsp.mix([magill.introA() for i in range(12)], False, 4.0)
+    #intro_b += magill.preintroC(magill.ad.data)
+    #intro_b += dsp.mix([magill.introB() for i in range(12)], True, 4.0)
+    #out += intro_b
 
     # Song
     dsp.beat = dsp.bpm2frames(86.0)
     out += magill.song()
     dsp.beat = dsp.bpm2frames(100.0)
     out += magill.preintroC(magill.ad.data)
-    out += dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), 'phasor')
+
+    phaset = dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), 'phasor')
     dsp.beat = dsp.bpm2frames(86.0)
-    out += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.99, 1.01, 'sine')), 'line')
-    out += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.99, 1.01, 'sine')), 'sine')
+    phaset += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.99, 1.01, 'sine')), 'line')
+    phaset += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.99, 1.01, 'sine')), 'sine')
     dsp.beat = dsp.bpm2frames(40.0)
-    out += dsp.env(dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.25)), 'sine'), 'line')
+    phaset += dsp.env(dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.25)), 'sine'), 'line')
+    out += dsp.mix([dsp.phasor(p, (0.99, 1.0 + (random.random() * 0.06), 'random'), (0.0, 1.0, 'random'), random.random()) for i in range(10)], False, 6.0)
 
     out += magill.wesbreak()
 
