@@ -60,7 +60,7 @@ def main(out=''):
     cap = dsp.cut(end, dsp.flen(end) - dsp.stf(1), dsp.stf(1))
 
     # Teoh
-    end = dsp.mix([dsp.pad(magill.teoh.data, 0, dsp.stf(10)), dsp.mix([dsp.pulsar(end, (1.0, 1.1, 'random') for i in range(3)])], False)
+    end = dsp.mix([dsp.pad(magill.teoh.data, 0, dsp.stf(10)), dsp.mix([dsp.pulsar(end, (1.0, 1.1, 'random') for i in range(3)], False)], False)
     out += end + cap
     dsp.beat = dsp.bpm2frames(90.0)
     out += magill.preintroC(dsp.transpose(cap, 0.9))
