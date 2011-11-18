@@ -288,33 +288,27 @@ class Magill:
         we = dsp.cut(w2, dsp.stf(57), dsp.stf(4))
         wf = dsp.cut(w2, dsp.stf(61), dsp.stf(8))
 
-        #g1 = dsp.cut(self.ad.data, 0, dsp.stf(5))
-        #g2 = dsp.fill(dsp.transpose(g1, 8.0), dsp.stf(5))
-        #g3 = dsp.fill(dsp.transpose(g1, 4.0), dsp.stf(5))
-        #g4 = dsp.fill(dsp.transpose(g1, 16.0), dsp.stf(5))
-        #g5 = dsp.fill(dsp.transpose(g1, 8.02), dsp.stf(5))
-        
-        wes = dsp.amp(dsp.mix([wa, wb, wd, we, wf]), 2.0)
-        #wes = dsp.alias(wes, 0, 'flat', 2)
-        wesd = dsp.amp(wes, 100.0)
-        wesd = dsp.amp(wesd, 0.04)
-        wes = dsp.mix([wes, wesd])
+        #wes = dsp.amp(dsp.mix([wa, wb, wd, we, wf]), 2.0)
+        #wesd = dsp.amp(wes, 100.0)
+        #wesd = dsp.amp(wesd, 0.04)
+        #wes = dsp.mix([wes, wesd])
 
-        #p['voicespeed'] = 1 
-        #p['voicebeat'] = dsp.beat / 32 
-        #p['voicelayers'] = 1 
-        #p['voicerand'] = False 
-        #p['guitars'] = ([g2, g3, g4, g5], [g2, g3, g4, g5])
-        #p['voices'] = [dsp.pad('', 0, dsp.stf(10))]
-        #ga = dsp.mix([self.sing(p) for i in range(20)], False)
-        #gb = dsp.env(dsp.amp(dsp.mix([self.sing(p) for i in range(20)], False), 30.0), 'line')
-
-        out = dsp.mix([dsp.pulsar(random.choice([w1, w2]), (1.0, random.random() + 1, 'random'), (0.0, 1.0, 'random')) for i in range(40)], True, 5.5)
-        #out = dsp.mix([wesin, wesout])
+        #out = dsp.mix([dsp.pulsar(random.choice([w1, w2]), (1.0, random.random() + 1, 'random'), (0.0, 1.0, 'random')) for i in range(40)], True, 5.5)
 
         #out += dsp.mix([ga, dsp.amp(gb, 0.1)], False)
         #out += wes
         out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
+        out += wa
+        out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
+        out += wb
+        out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
+        out += wc
+        out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
+        out += wd
+        out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
+        out += we
+        out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
+        out += wf
 
 
         return out
