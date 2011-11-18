@@ -41,9 +41,9 @@ def main(out=''):
     out += magill.preintroC(magill.ad.data)
     out += dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), 'phasor')
     dsp.beat = dsp.bpm2frames(86.0)
-    out += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.95, 1.02, 'sine')), 'line')
+    out += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.99, 1.01, 'sine')), 'line')
     dsp.beat = dsp.bpm2frames(40.0)
-    out += dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.25)), 'sine')
+    out += dsp.env(dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.25)), 'sine'), 'line')
 
     out += magill.wesbreak()
 
