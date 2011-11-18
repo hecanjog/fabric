@@ -16,7 +16,7 @@ def main(out=''):
     dsp.beat = dsp.bpm2frames(88.0)
 
     # Should We All Wake Up
-    #out += magill.tmp.data
+    out += magill.tmp.data
 
     # prelude
     out += magill.preintroA(magill.ac.data)
@@ -42,6 +42,7 @@ def main(out=''):
     out += dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), 'phasor')
     dsp.beat = dsp.bpm2frames(86.0)
     out += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.99, 1.01, 'sine')), 'line')
+    out += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.99, 1.01, 'sine')), 'sine')
     dsp.beat = dsp.bpm2frames(40.0)
     out += dsp.env(dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.25)), 'sine'), 'line')
 
