@@ -14,8 +14,8 @@ def main(out=''):
     score = Score()
     dsp.beat = dsp.bpm2frames(88.0)
 
-    rough = dsp.mix([score.opening(dsp.stf(600), 'random') for i in range(3)])
-    roughy = dsp.mix([score.opening(dsp.stf(600), 'line') for i in range(3)])
+    rough = dsp.mix([score.opening(dsp.stf(500), 'random') for i in range(3)])
+    roughy = dsp.mix([score.opening(dsp.stf(500), 'line') for i in range(3)])
     out += dsp.mix([rough, roughy])
 
     out = dsp.write(out, 'render', True)
