@@ -46,7 +46,7 @@ def main(out=''):
     phaset += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.99, 1.01, 'sine')), 'sine')
     dsp.beat = dsp.bpm2frames(40.0)
     phaset += dsp.env(dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.25)), 'sine'), 'line')
-    out += dsp.mix([dsp.phasor(p, (0.99, 1.0 + (random.random() * 0.06), 'random'), (0.0, 1.0, 'random'), random.random()) for i in range(10)], False, 6.0)
+    out += dsp.mix([dsp.pulsar(p, (0.99, 1.0 + (random.random() * 0.06), 'random'), (0.0, 1.0, 'random'), random.random()) for i in range(10)], False, 6.0)
 
     out += magill.wesbreak()
 
