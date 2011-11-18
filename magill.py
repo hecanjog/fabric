@@ -511,7 +511,16 @@ class Magill:
         p['voicerand'] = True
         p['voicespeed'] = 1.0
         p['guitars'] = ([g5], [g2])
-        p['voices'] = [dsp.pad('', dsp.stf(14), 0)]
+        p['voices'] = [dsp.pad('', dsp.stf(4), 0)]
+        dsp.beat = dsp.bpm2frames(88.0)
+        out += self.sing(p)
+        dsp.beat = dsp.bpm2frames(88.0)
+        out += self.sing(p)
+        p['guitars'] = ([g5], [g5])
+        dsp.beat = dsp.bpm2frames(88.0)
+        out += self.sing(p)
+        dsp.beat = dsp.bpm2frames(88.0)
+        p['voices'] = [dsp.pad('', dsp.stf(8), 0)]
         out += dsp.env(self.sing(p), 'phasor')
 
         return out
