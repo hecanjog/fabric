@@ -317,7 +317,7 @@ class Magill:
             else:
                 smudge_parts_a_r.append(part)
 
-        smudge_parts_b_r = []
+        smudge_parts_b_l = []
         smudge_parts_b_r = []
         enough_smudge_parts_b = dsp.split(enough_smudgy, dsp.mstf(40))
         for index, part in enumerate(enough_smudge_parts_b):
