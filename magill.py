@@ -20,7 +20,6 @@ def main(out=''):
 
     # prelude
     out += magill.preintroA(magill.ac.data)
-    out += magill.guitarphase(magill.ac.data)
     dsp.beat = dsp.bpm2frames(78.0)
     out += magill.guitarphase(magill.ac.data)
     dsp.beat = dsp.bpm2frames(48.0)
@@ -40,13 +39,13 @@ def main(out=''):
     out += magill.song()
     dsp.beat = dsp.bpm2frames(100.0)
     out += magill.preintroC(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
+    out += dsp.env(magill.guitarphase(magill.ad.data), 'phasor')
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
 
     out += magill.wesbreak()
 
@@ -299,10 +298,14 @@ class Magill:
         enough_rise = dsp.mix([''.join([dsp.pad(dsp.pulsar(we_part, we_freq, we_amp, random.random()), 0, random.randint(200, 2000)) for we_part in we_parts]) for i in range(40)], False, 8.0)
         out += enough_rise
 
+        we_parts = dsp.interleave(dsp.split(wf, dsp.mstf(70)), dsp.split(wf, dsp.mstf(200)))
+        we_freq = (0.8, 1.0, 'random')
+        enough_enough = dsp.mix([''.join([dsp.pad(dsp.pulsar(we_part, we_freq, we_amp, random.random()), 0, random.randint(20, 200)) for we_part in we_parts]) for i in range(40)], False, 8.0)
+
         we_freq = (0.9, 1.05, 'random')
         enough_smudge = dsp.mix([dsp.pulsar(random.choice([wd, we]), (1.0, 1.07, 'random'), (0.0, 1.0, 'random'), random.random()) for i in range(40)], True, 8)
         enough_smudgy = dsp.mix([dsp.pulsar(random.choice([wd, we]), (1.0, 1.07, 'random'), (0.0, 1.0, 'random'), random.random()) for i in range(40)], True, 8)
-        out += dsp.mix([enough_smudge, enough_smudgy, wf])
+        out += dsp.mix([enough_smudge, enough_smudgy, enough_enough])
 
         #out += dsp.mix([ga, dsp.amp(gb, 0.1)], False)
         #out += wes
@@ -463,7 +466,7 @@ class Magill:
         numhats = dsp.flen(big) / dsp.beat
         hat = dsp.cut(self.ad.data, 0, dsp.mstf(60))
         nohat = dsp.pad('', dsp.mstf(60), 0)
-        hats = [dsp.pad(dsp.alias(dsp.pulsar(random.choice([hat, nohat]))), 0, dsp.beat - dsp.mstf(60)) for i in range(numhats)]
+        hats = [dsp.pad(dsp.pulsar(random.choice([hat, nohat])), 0, dsp.beat - dsp.mstf(60)) for i in range(numhats)]
         hats = ''.join(hats)
 
         numhats = dsp.flen(big) / (dsp.beat / 3)
