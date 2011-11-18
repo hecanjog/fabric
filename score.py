@@ -36,9 +36,10 @@ class Score:
 
     def opening(self, length, type='sine', out=''):
         salty = random.random() * 0.01
-        low = dsp.mix([dsp.env(dsp.tone(length, (i+1)*50.0 + salty, type, random.random() * 0.2), 'sine') for i in range(6)])
-        mid = dsp.mix([dsp.env(dsp.tone(length, (i+1)*75.1 + salty, type, random.random() * 0.2), 'sine') for i in range(6)])
-        out += dsp.mix([low,mid])
+        low = dsp.mix([dsp.env(dsp.tone(length, (i+1)*25.0 + salty, type, random.random() * 0.2), 'sine') for i in range(8)])
+        mid = dsp.mix([dsp.env(dsp.tone(length, (i+1)*37.51 + salty, type, random.random() * 0.2), 'sine') for i in range(8)])
+        high = dsp.mix([dsp.env(dsp.tone(length, (i+1)*50.05 + salty, type, random.random() * 0.2), 'sine') for i in range(8)])
+        out += dsp.mix([low,mid, dsp.env(high, 'line')])
         
         return out
 
