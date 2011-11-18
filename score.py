@@ -14,9 +14,11 @@ def main(out=''):
     score = Score()
     dsp.beat = dsp.bpm2frames(88.0)
 
+    print dsp.cycle_count
     rough = dsp.mix([score.opening(dsp.stf(500), 'random') for i in range(3)])
     roughy = dsp.mix([score.opening(dsp.stf(500), 'line') for i in range(3)])
     out += dsp.mix([rough, roughy])
+    print dsp.cycle_count
 
     out = dsp.write(out, 'render', True)
 
