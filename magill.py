@@ -309,12 +309,12 @@ class Magill:
         #ga = dsp.mix([self.sing(p) for i in range(20)], False)
         #gb = dsp.env(dsp.amp(dsp.mix([self.sing(p) for i in range(20)], False), 30.0), 'line')
 
-        wesin = dsp.mix([dsp.pulsar(wf, (1.0, 1.1, 'random'), (0.0, 1.0, 'phasor')) for i in range(20)], True, 3.5)
-        wesout = dsp.mix([dsp.pulsar(wf, (1.0, 1.1, 'random'), (0.0, 1.0, 'line')) for i in range(20)], True, 3.5)
+        wesin = dsp.mix([dsp.pulsar(wf, (1.0, 1.2, 'random'), (0.0, 1.0, 'phasor')) for i in range(20)], True, 3.5)
+        wesout = dsp.mix([dsp.pulsar(wf, (1.0, 1.2, 'random'), (0.0, 1.0, 'line')) for i in range(20)], False, 3.5)
         out = dsp.mix([wesin, wesout])
 
         #out += dsp.mix([ga, dsp.amp(gb, 0.1)], False)
-        out += wes
+        #out += wes
         out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
 
 
