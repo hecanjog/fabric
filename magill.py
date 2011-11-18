@@ -293,7 +293,7 @@ class Magill:
         #wesd = dsp.amp(wesd, 0.04)
         #wes = dsp.mix([wes, wesd])
 
-        out = dsp.mix([dsp.pulsar(random.choice([wd, we]), (1.0, 1.06, 'random'), (0.0, 1.0, 'random')) for i in range(40)], True, 5.5)
+        out = dsp.mix([dsp.pulsar(random.choice([wd, we]), (1.0, 1.1, 'random'), (0.0, 1.0, 'random')) for i in range(40)], True, 5.5)
 
         #out += dsp.mix([ga, dsp.amp(gb, 0.1)], False)
         #out += wes
