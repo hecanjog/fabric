@@ -505,7 +505,7 @@ class Magill:
         hats = dsp.mix([dsp.amp(''.join(hatz), 1.2), hats])
 
         jangle = dsp.mix([hats, dsp.amp(big, 0.5), dsp.amp(dings, 0.5)])
-        out += dsp.mix([dsp.pulsar(dsp.mix([big, jangle]), (0.99, 1.01, 'random'), (0.9, 1.0, 'random'), random.random()) for i in range(10)], False, 2.0)
+        out += dsp.mix([dsp.pulsar(dsp.mix([big, jangle]), (0.995, 1.01, 'random'), (0.9, 1.0, 'random'), random.random()) for i in range(10)], False, 2.0)
 
         # dings
         p['voicerand'] = True
