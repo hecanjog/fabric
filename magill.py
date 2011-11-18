@@ -294,7 +294,7 @@ class Magill:
         #wes = dsp.mix([wes, wesd])
 
         we_parts = dsp.split(we, dsp.mstf(40))
-        enough_rise = ''.join([dsp.pad(dsp.pulsar(we_part), 0, random.randint(44100)) for we_part in we_parts])
+        enough_rise = ''.join([dsp.pad(dsp.pulsar(we_part), 0, random.randint(0, 44100)) for we_part in we_parts])
         
         out += enough_rise
         enough_smudge = dsp.mix([dsp.pulsar(random.choice([wd, we]), (1.0, 1.07, 'random'), (0.0, 1.0, 'random'), random.random()) for i in range(40)], True, 8)
