@@ -15,6 +15,7 @@ def main(out=''):
     magill = Magill()
     dsp.beat = dsp.bpm2frames(88.0)
 
+    # Should We All Wake Up
     #out += magill.tmp.data
 
     # prelude
@@ -36,9 +37,11 @@ def main(out=''):
     #intro_b += dsp.mix([magill.introB() for i in range(12)], True, 4.0)
     #out += intro_b
 
-    # Song
+    # Wes 
     out += magill.preintroC(magill.ad.data)
     out += magill.wesbreak()
+
+    # Song
     out += magill.song()
     out += magill.preintroC(magill.ad.data)
     out += magill.guitarphase(magill.ad.data)
@@ -60,12 +63,15 @@ def main(out=''):
     end += dsp.amp(magill.guitarphase(magill.ad.data), 100.0)
     end = dsp.amp(end, 0.3)
     cap = dsp.cut(end, dsp.flen(end) - dsp.stf(1), dsp.stf(1))
+
+    # Teoh
     end = dsp.mix([dsp.pad(dsp.cut(magill.teoh.data, dsp.stf(0), dsp.flen(magill.teoh.data) - dsp.stf(0)), 0, dsp.stf(10)), end], False)
     out += end + cap
     dsp.beat = dsp.bpm2frames(90.0)
     out += magill.preintroC(dsp.transpose(cap, 0.9))
 
-    out += magill.all.data
+    # All Those I Know
+    #out += magill.all.data
 
     out = dsp.write(out, 'magill', False)
 
