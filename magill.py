@@ -28,25 +28,23 @@ def main(out=''):
     #out += magill.preintroB(magill.ac.data)
     #dsp.beat = dsp.bpm2frames(88.0)
 
-    ## Sparkle motion
-    #intro_b = dsp.mix([magill.introA() for i in range(12)], False, 4.0)
-    #intro_b += magill.preintroC(magill.ad.data)
-    #intro_b += dsp.mix([magill.introB() for i in range(12)], True, 4.0)
-    #out += intro_b
+    # Sparkle motion
+    intro_b = dsp.mix([magill.introA() for i in range(12)], False, 4.0)
+    intro_b += magill.preintroC(magill.ad.data)
+    intro_b += dsp.mix([magill.introB() for i in range(12)], True, 4.0)
+    out += intro_b
 
     # Song
     dsp.beat = dsp.bpm2frames(86.0)
     out += magill.song()
-    dsp.beat = dsp.bpm2frames(100.0)
-    out += magill.preintroC(magill.ad.data)
+    #out += magill.preintroC(magill.ad.data)
 
     phaset = dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), 'phasor')
-    dsp.beat = dsp.bpm2frames(86.0)
     phaset += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.99, 1.01, 'sine')), 'line')
     phaset += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.99, 1.01, 'sine')), 'sine')
     dsp.beat = dsp.bpm2frames(40.0)
     phaset += dsp.env(dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.25)), 'sine'), 'line')
-    out += dsp.mix([dsp.pulsar(phaset, (0.99, 1.0 + (random.random() * 0.06), 'random'), (0.0, 1.0, 'random'), random.random()) for i in range(10)], False, 6.0)
+    out += dsp.mix([dsp.pulsar(phaset, (0.99, 1.0 + (random.random() * 0.06), 'random'), (0.0, 1.0, 'random'), random.random()) for i in range(10)], False, 12.0)
 
     out += magill.wesbreak()
 
@@ -312,7 +310,7 @@ class Magill:
 
         smudge_parts_a_l = []
         smudge_parts_a_r = []
-        enough_smudge_parts_a = dsp.split(enough_smudge, dsp.mstf(40))
+        enough_smudge_parts_a = dsp.split(wf, dsp.mstf(40))
         for index, part in enumerate(enough_smudge_parts_a):
             if index % 2:
                 smudge_parts_a_l.append(part)
@@ -333,7 +331,7 @@ class Magill:
         smudge_first_r = dsp.mix([''.join([dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 1.0) for part in smudge_parts_a_r]) for i in range(4)]) 
         smudge_second_r = dsp.mix([''.join([dsp.pulsar(part, (1.0, 1.02, 'random'), (0.0, 1.0, 'sine'), 1.0) for part in smudge_parts_b_r]) for i in range(4)]) 
 
-        out += dsp.mix([smudge_first_l, smudge_first_r, smudge_second_l, smudge_second_r])
+        out += dsp.pulsar(dsp.mix([smudge_first_l, smudge_first_r, smudge_second_l, smudge_second_r]), (0.98, 1.01, 'random'))
 
         out += dsp.pad('', dsp.mstf(3000), dsp.stf(0))
         out += dsp.mix([enough_smudge, enough_smudgy, dsp.env(enough_enough, 'phasor')])
