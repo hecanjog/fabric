@@ -6,6 +6,7 @@ import random
 import time
 import audioop 
 import math
+import subprocess
 
 def main(out=''):
     timer = time.time()
@@ -14,52 +15,42 @@ def main(out=''):
     magill = Magill()
     dsp.beat = dsp.bpm2frames(88.0)
 
-    out += magill.tmp.data
+    #out += magill.tmp.data
 
     # prelude
-    out += magill.preintroA(magill.ac.data)
-    out += magill.guitarphase(magill.ac.data)
-    dsp.beat = dsp.bpm2frames(78.0)
-    out += magill.guitarphase(magill.ac.data)
-    dsp.beat = dsp.bpm2frames(68.0)
-    out += magill.preintroB(magill.ac.data)
-    dsp.beat = dsp.bpm2frames(48.0)
-    out += magill.preintroB(magill.ac.data)
-    dsp.beat = dsp.bpm2frames(28.0)
-    out += magill.preintroB(magill.ac.data)
-    dsp.beat = dsp.bpm2frames(88.0)
-    #print dsp.write(out, 'magill-prelude')
+    #out += magill.preintroA(magill.ac.data)
+    #out += magill.guitarphase(magill.ac.data)
+    #dsp.beat = dsp.bpm2frames(78.0)
+    #out += magill.guitarphase(magill.ac.data)
+    #dsp.beat = dsp.bpm2frames(68.0)
+    #out += magill.preintroB(magill.ac.data)
+    #dsp.beat = dsp.bpm2frames(48.0)
+    #out += magill.preintroB(magill.ac.data)
+    #dsp.beat = dsp.bpm2frames(28.0)
+    #out += magill.preintroB(magill.ac.data)
+    #dsp.beat = dsp.bpm2frames(88.0)
 
     # Sparkle motion
-    #out = ''
-    intro_b = dsp.mix([magill.introA() for i in range(12)], False, 4.0)
-    intro_b += magill.preintroC(magill.ad.data)
-    intro_b += dsp.mix([magill.introB() for i in range(12)], True, 4.0)
-    out += intro_b
-    #print dsp.write(out, 'magill-intro')
+    #intro_b = dsp.mix([magill.introA() for i in range(12)], False, 4.0)
+    #intro_b += magill.preintroC(magill.ad.data)
+    #intro_b += dsp.mix([magill.introB() for i in range(12)], True, 4.0)
+    #out += intro_b
 
     # Song
-    #out = ''
-    out += magill.preintroC(magill.ad.data)
-    out += magill.wesbreak()
-    out += magill.song()
-    out += magill.preintroC(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.guitarphase(magill.ad.data)
-    out += magill.preintroC(magill.ad.data)
-    #print dsp.write(out, 'magill-song')
+    #out += magill.preintroC(magill.ad.data)
+    #out += magill.wesbreak()
+    #out += magill.song()
+    #out += magill.preintroC(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.guitarphase(magill.ad.data)
+    #out += magill.preintroC(magill.ad.data)
 
-    #out = ''
-    #print dsp.write(out, 'magill-wesbreak')
-
-
-    #out = ''
     dsp.beat = dsp.bpm2frames(20.0)
     end = dsp.amp(magill.guitarphase(magill.ad.data), 30.0)
     end += dsp.amp(dsp.mix([magill.guitarphase(magill.ad.data), magill.guitarphase(dsp.transpose(magill.ad.data, 0.75))]), 30.0)
