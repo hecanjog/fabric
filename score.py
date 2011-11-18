@@ -14,9 +14,10 @@ def main(out=''):
     score = Score()
     dsp.beat = dsp.bpm2frames(88.0)
 
-    out += dsp.mix([score.opening(dsp.stf(60), 'random') for i in range(3)])
-    out += dsp.mix([score.opening(dsp.stf(60), 'line') for i in range(3)])
-    out += dsp.mix([score.opening(dsp.stf(60), 'sine') for i in range(3)])
+    rough = dsp.mix([score.opening(dsp.stf(360), 'random') for i in range(3)])
+    roughy = dsp.mix([score.opening(dsp.stf(360), 'line') for i in range(3)])
+    smooth = dsp.mix([score.opening(dsp.stf(360), 'sine') for i in range(3)])
+    out += dsp.mix([rough, roughy, smooth], False, 0.8)
 
     out = dsp.write(out, 'render', True)
 
