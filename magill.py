@@ -293,22 +293,25 @@ class Magill:
         #wesd = dsp.amp(wesd, 0.04)
         #wes = dsp.mix([wes, wesd])
 
-        #out = dsp.mix([dsp.pulsar(random.choice([w1, w2]), (1.0, random.random() + 1, 'random'), (0.0, 1.0, 'random')) for i in range(40)], True, 5.5)
+        out = dsp.mix([dsp.pulsar(random.choice([wd, we]), (1.0, random.random() + 1, 'random'), (0.0, 1.0, 'random')) for i in range(40)], True, 5.5)
 
         #out += dsp.mix([ga, dsp.amp(gb, 0.1)], False)
         #out += wes
-        out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
-        out += wa
-        out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
-        out += wb
-        out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
-        out += wc
-        out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
-        out += wd
-        out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
-        out += we
-        out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
-        out += wf
+
+        #out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
+        #out += wa # that should be enough
+        #out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
+        #out += wb # enouuuugh
+        #out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
+        #out += wc # blast over accordingly
+
+        #out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
+        #out += wd # that should be mid
+        #out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
+        #out += we # that should be high
+
+        #out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
+        #out += wf
 
 
         return out
