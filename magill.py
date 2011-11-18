@@ -19,23 +19,23 @@ def main(out=''):
     #out += magill.tmp.data
 
     # prelude
-    #out += magill.preintroA(magill.ac.data)
-    #out += magill.guitarphase(magill.ac.data)
-    #dsp.beat = dsp.bpm2frames(78.0)
-    #out += magill.guitarphase(magill.ac.data)
-    #dsp.beat = dsp.bpm2frames(68.0)
-    #out += magill.preintroB(magill.ac.data)
-    #dsp.beat = dsp.bpm2frames(48.0)
-    #out += magill.preintroB(magill.ac.data)
-    #dsp.beat = dsp.bpm2frames(28.0)
-    #out += magill.preintroB(magill.ac.data)
-    #dsp.beat = dsp.bpm2frames(88.0)
+    out += magill.preintroA(magill.ac.data)
+    out += magill.guitarphase(magill.ac.data)
+    dsp.beat = dsp.bpm2frames(78.0)
+    out += magill.guitarphase(magill.ac.data)
+    dsp.beat = dsp.bpm2frames(68.0)
+    out += magill.preintroB(magill.ac.data)
+    dsp.beat = dsp.bpm2frames(48.0)
+    out += magill.preintroB(magill.ac.data)
+    dsp.beat = dsp.bpm2frames(28.0)
+    out += magill.preintroB(magill.ac.data)
+    dsp.beat = dsp.bpm2frames(88.0)
 
     # Sparkle motion
-    #intro_b = dsp.mix([magill.introA() for i in range(12)], False, 4.0)
-    #intro_b += magill.preintroC(magill.ad.data)
-    #intro_b += dsp.mix([magill.introB() for i in range(12)], True, 4.0)
-    #out += intro_b
+    intro_b = dsp.mix([magill.introA() for i in range(12)], False, 4.0)
+    intro_b += magill.preintroC(magill.ad.data)
+    intro_b += dsp.mix([magill.introB() for i in range(12)], True, 4.0)
+    out += intro_b
 
     # Wes 
     out += magill.preintroC(magill.ad.data)
