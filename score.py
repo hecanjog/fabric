@@ -14,8 +14,10 @@ def main(out=''):
     score = Score()
     dsp.beat = dsp.bpm2frames(88.0)
 
-    out += score.opening(dsp.stf(500))
-    print dsp.cycle_count
+    #out += score.opening(dsp.stf(60))
+    #print dsp.cycle_count
+
+    out += score.pings(dsp.stf(60))
 
     out = dsp.write(out, 'render', True)
 
@@ -31,6 +33,11 @@ class Score:
     def __init__(self):
         # Set audio params
         dsp.audio_params = dsp.default_params 
+
+    def pings(self, length, out=''):
+        tone = dsp.tone(dsp.mstf(30), 1600, 'sine', 0.3)
+        out += ''.join([dsp.env(tone, 'sine') for i in range(length / dsp.flen(tone))])
+        return out
 
     def opening(self, length, type='sine', out=''):
         print 'opening!', length, type
