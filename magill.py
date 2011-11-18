@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
 
-import fabric as dsp
+import fabric.fabric as dsp
 import random
 import time
 
