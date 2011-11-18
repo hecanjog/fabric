@@ -82,7 +82,7 @@ def main(out=''):
 
     out = dsp.write(out, 'magill')
 
-    subprocess.Popen('sox -S renders/' + out = ' -C 0 magill.mp3', shell=True, executable="/bin/bash", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.Popen('sox -S renders/' + out + ' -C 0 magill.mp3', shell=True, executable="/bin/bash", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     subprocess.Popen('scp magill.mp3 somagical@magic.hecanjog.com:~/scores.hecanjog.com/magill/', shell=True, executable="/bin/bash", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # Show render time
