@@ -16,7 +16,7 @@ def main(out=''):
     dsp.beat = dsp.bpm2frames(88.0)
 
     # Should We All Wake Up
-    out += magill.tmp.data
+    #out += magill.tmp.data
 
     # prelude
     out += magill.preintroA(magill.ac.data)
@@ -39,17 +39,11 @@ def main(out=''):
     out += magill.song()
     dsp.beat = dsp.bpm2frames(100.0)
     out += magill.preintroC(magill.ad.data)
-    out += dsp.env(magill.guitarphase(magill.ad.data), 'phasor')
+    out += dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), 'phasor')
     dsp.beat = dsp.bpm2frames(86.0)
-    out += dsp.env(magill.guitarphase(magill.ad.data), 'phasor')
+    out += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.95, 1.02, 'sine')), 'line')
     dsp.beat = dsp.bpm2frames(40.0)
-    out += dsp.env(magill.guitarphase(magill.ad.data), 'phasor')
-    #out += magill.guitarphase(magill.ad.data)
-    #out += magill.guitarphase(magill.ad.data)
-    #out += magill.guitarphase(magill.ad.data)
-    #out += magill.guitarphase(magill.ad.data)
-    #out += magill.guitarphase(magill.ad.data)
-    #out += magill.guitarphase(magill.ad.data)
+    out += dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.25)), 'sine')
 
     out += magill.wesbreak()
 
@@ -293,19 +287,18 @@ class Magill:
 
         we_parts = dsp.interleave(dsp.split(we, dsp.mstf(60)), dsp.split(wd, dsp.mstf(70)))
         we_freq = (0.9, 1.05, 'random')
-        we_amp = (0.0, 1.0, 'sine')
+        we_amp = (0.0, 1.0, 'random')
         enough_rise = dsp.mix([''.join([dsp.pad(dsp.pulsar(we_part, we_freq, we_amp, random.random()), 0, random.randint(20, 1000)) for we_part in we_parts]) for i in range(40)], False, 8.0)
         out += enough_rise
 
         we_parts = dsp.interleave(dsp.split(we, dsp.mstf(100)), dsp.split(wd, dsp.mstf(120)))
         we_freq = (0.8, 1.0, 'random')
-        we_amp = (0.0, 1.0, 'random')
         enough_rise = dsp.mix([''.join([dsp.pad(dsp.pulsar(we_part, we_freq, we_amp, random.random()), 0, random.randint(200, 2000)) for we_part in we_parts]) for i in range(40)], False, 8.0)
         out += enough_rise
 
-        we_parts = dsp.interleave(dsp.split(wf, dsp.mstf(70)), dsp.split(wf, dsp.mstf(200)))
+        we_parts = dsp.split(wf, dsp.mstf(70))
         we_freq = (0.8, 1.0, 'random')
-        enough_enough = dsp.mix([''.join([dsp.pad(dsp.pulsar(we_part, we_freq, we_amp, random.random()), 0, random.randint(20, 200)) for we_part in we_parts]) for i in range(40)], False, 8.0)
+        enough_enough = dsp.mix([''.join([dsp.pad(dsp.pulsar(we_part, we_freq, we_amp, random.random()), 0, random.randint(2, 20)) for we_part in we_parts]) for i in range(40)], False, 8.0)
 
         out += dsp.pad('', dsp.mstf(1000), dsp.stf(0))
 
@@ -314,8 +307,8 @@ class Magill:
         enough_smudge = dsp.mix([dsp.pulsar(random.choice([wd, we]), (1.0, 1.07, 'random'), (0.0, 1.0, 'random'), random.random()) for i in range(40)], True, 8)
         enough_smudgy = dsp.mix([dsp.pulsar(random.choice([wd, we]), (1.0, 1.07, 'random'), (0.0, 1.0, 'random'), random.random()) for i in range(40)], True, 8)
 
-        out += enough_smudge
-        out += dsp.pad('', dsp.mstf(1000), dsp.stf(0))
+        #out += enough_smudge
+        out += dsp.pad('', dsp.mstf(3000), dsp.stf(0))
         out += dsp.mix([enough_smudge, enough_smudgy, dsp.env(enough_enough, 'phasor')])
 
         #out += dsp.mix([ga, dsp.amp(gb, 0.1)], False)
