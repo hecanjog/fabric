@@ -37,19 +37,19 @@ def main(out=''):
     #out += intro_b
 
     # Song
-    #out += magill.preintroC(magill.ad.data)
-    #out += magill.wesbreak()
-    #out += magill.song()
-    #out += magill.preintroC(magill.ad.data)
-    #out += magill.guitarphase(magill.ad.data)
-    #out += magill.guitarphase(magill.ad.data)
-    #out += magill.guitarphase(magill.ad.data)
-    #out += magill.guitarphase(magill.ad.data)
-    #out += magill.guitarphase(magill.ad.data)
-    #out += magill.guitarphase(magill.ad.data)
-    #out += magill.guitarphase(magill.ad.data)
-    #out += magill.guitarphase(magill.ad.data)
-    #out += magill.preintroC(magill.ad.data)
+    out += magill.preintroC(magill.ad.data)
+    out += magill.wesbreak()
+    out += magill.song()
+    out += magill.preintroC(magill.ad.data)
+    out += magill.guitarphase(magill.ad.data)
+    out += magill.guitarphase(magill.ad.data)
+    out += magill.guitarphase(magill.ad.data)
+    out += magill.guitarphase(magill.ad.data)
+    out += magill.guitarphase(magill.ad.data)
+    out += magill.guitarphase(magill.ad.data)
+    out += magill.guitarphase(magill.ad.data)
+    out += magill.guitarphase(magill.ad.data)
+    out += magill.preintroC(magill.ad.data)
 
     dsp.beat = dsp.bpm2frames(20.0)
     end = dsp.amp(magill.guitarphase(magill.ad.data), 30.0)
@@ -60,22 +60,14 @@ def main(out=''):
     end += dsp.amp(magill.guitarphase(magill.ad.data), 100.0)
     end = dsp.amp(end, 0.3)
     cap = dsp.cut(end, dsp.flen(end) - dsp.stf(1), dsp.stf(1))
-    #out += end
     end = dsp.mix([dsp.pad(dsp.cut(magill.teoh.data, dsp.stf(0), dsp.flen(magill.teoh.data) - dsp.stf(0)), 0, dsp.stf(10)), end], False)
-    #out += dsp.mix([end, wes], False)
-    #out += dsp.pad(end, 0, dsp.stf(40))
     out += end + cap
     dsp.beat = dsp.bpm2frames(90.0)
     out += magill.preintroC(dsp.transpose(cap, 0.9))
-    #print dsp.write(out, 'magill-outro')
 
     out += magill.all.data
 
-    out = dsp.write(out, 'magill')
-
-    #subprocess.Popen('sox -S renders/' + out + ' -C 0 magill.mp3', shell=True, executable="/bin/bash", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    #subprocess.Popen('scp magill.mp3 somagical@magic.hecanjog.com:~/scores.hecanjog.com/magill/', shell=True, executable="/bin/bash", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    subprocess.Popen('scp ' + out + ' somagical@magic.hecanjog.com:~/scores.hecanjog.com/magill/', shell=True, executable="/bin/bash", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out = dsp.write(out, 'magill', False)
 
     # Show render time
     timer = time.time() - timer
