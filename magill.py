@@ -319,7 +319,7 @@ class Magill:
         #out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
         #out += we # that should be high
 
-        #out += dsp.pad('', dsp.mstf(100), dsp.stf(0))
+        out += dsp.pad('', dsp.mstf(1000), dsp.stf(0))
         #out += wf
 
 
