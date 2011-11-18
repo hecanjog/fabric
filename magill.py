@@ -38,6 +38,7 @@ def main(out=''):
     dsp.beat = dsp.bpm2frames(86.0)
     song = magill.song()
 
+    phaset = dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.25)), 'line')
     phaset = dsp.env(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), 'phasor')
     phaset += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.99, 1.01, 'sine')), 'line')
     phaset += dsp.env(dsp.pulsar(magill.guitarphase(dsp.transpose(magill.ad.data, 0.5)), (0.99, 1.01, 'sine')), 'sine')
@@ -521,7 +522,7 @@ class Magill:
         out += self.sing(p)
         dsp.beat = dsp.bpm2frames(88.0)
         p['voices'] = [dsp.pad('', dsp.stf(8), 0)]
-        out += dsp.env(self.sing(p), 'phasor')
+        out += dsp.pulsar(dsp.env(self.sing(p), 'phasor'), (0.98, 1.01, 'random'))
 
         return out
 
