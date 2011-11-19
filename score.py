@@ -14,10 +14,8 @@ def main(out=''):
     score = Score()
     dsp.beat = dsp.bpm2frames(88.0)
 
-    #out += score.opening(dsp.stf(60))
-    #print dsp.cycle_count
-
-    out += score.pings(dsp.stf(60))
+    out += dsp.mix([score.opening(dsp.stf(60)), score.pings(dsp.stf(60))])
+    print dsp.cycle_count
 
     out = dsp.write(out, 'render', True)
 
