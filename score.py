@@ -33,8 +33,8 @@ class Score:
         dsp.audio_params = dsp.default_params 
 
     def pings(self, grain_size, length, out=''):
-        tone = dsp.tone(grain_size, 100 * 2**5, 'sine', 0.1)
-        tone2 = dsp.tone(grain_size, 75 * 2**4, 'sine', 0.1)
+        tone = dsp.tone(grain_size, 100 * 2**6, 'sine', 0.1)
+        tone2 = dsp.tone(grain_size, 75 * 2**6, 'sine', 0.1)
         tone = dsp.mix([tone, tone2])
         out += ''.join([dsp.env(tone, 'sine') for i in range(length / dsp.flen(tone))])
         out = dsp.pulsar(out)
