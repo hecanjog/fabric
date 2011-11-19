@@ -36,7 +36,7 @@ class Score:
         tone = dsp.tone(grain_size, 100 * 2**6, 'sine', 0.1)
         tone2 = dsp.tone(grain_size, 75 * 2**6, 'sine', 0.1)
         tone = dsp.mix([tone, tone2])
-        out += ''.join([dsp.env(tone, 'sine') for i in range(length / dsp.flen(tone))])
+        out += ''.join([dsp.env(dsp.pulsar(tone, (1.0, 1.05, 'random'), (1.0, 1.0, 'line'), random.random()), 'sine') for i in range(length / dsp.flen(tone))])
         out = dsp.pulsar(out)
         return out
 
