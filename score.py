@@ -35,10 +35,11 @@ class Score:
         dsp.audio_params = dsp.default_params 
 
     def pings(self, length, out=''):
-        tone = dsp.tone(dsp.mstf(100), 9000, 'sine', 0.3)
-        tone2 = dsp.tone(dsp.mstf(100), 8000, 'sine', 0.3)
+        tone = dsp.tone(dsp.mstf(100), 9000, 'sine', 0.1)
+        tone2 = dsp.tone(dsp.mstf(100), 8000, 'sine', 0.1)
         tone = dsp.mix([tone, tone2])
         out += ''.join([dsp.env(tone, 'sine') for i in range(length / dsp.flen(tone))])
+        out = dsp.pulsar(out)
         return out
 
     def opening(self, length, type='sine', out=''):
