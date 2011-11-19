@@ -14,7 +14,7 @@ def main(out=''):
     score = Score()
     dsp.beat = dsp.bpm2frames(88.0)
 
-    out += dsp.mix([score.opening(dsp.stf(60)), score.pings(dsp.stf(60))])
+    out += dsp.mix([score.opening(dsp.stf(60)), score.pings(dsp.mstf(100), dsp.stf(60)), score.pings(dsp.mstf(101), dsp.stf(60))])
     print dsp.cycle_count
 
     out = dsp.write(out, 'render', True)
@@ -32,9 +32,9 @@ class Score:
         # Set audio params
         dsp.audio_params = dsp.default_params 
 
-    def pings(self, length, out=''):
-        tone = dsp.tone(dsp.mstf(100), 100 * 2**8, 'sine', 0.1)
-        tone2 = dsp.tone(dsp.mstf(100), 75 * 2**8, 'sine', 0.1)
+    def pings(self, grain_size, length, out=''):
+        tone = dsp.tone(grain_size, 100 * 2**3, 'sine', 0.1)
+        tone2 = dsp.tone(grain_size, 75 * 2**4, 'sine', 0.1)
         tone = dsp.mix([tone, tone2])
         out += ''.join([dsp.env(tone, 'sine') for i in range(length / dsp.flen(tone))])
         out = dsp.pulsar(out)
