@@ -14,8 +14,16 @@ def main(out=''):
     score = Score()
     dsp.beat = dsp.bpm2frames(88.0)
 
-    out += dsp.mix([score.opening(dsp.stf(120)), score.pings(dsp.mstf(100), dsp.stf(60)), score.pings(dsp.mstf(101), dsp.stf(60))], False)
-    print dsp.cycle_count
+    opening = score.opening(dsp.stf(260))
+
+    pings = dsp.mix([score.pings(dsp.mstf(100), dsp.stf(120), (50 * 2**6, 75 * 2**6)), score.pings(dsp.mstf(101), dsp.stf(60), (50 * 2**6, 75 * 2**6))])
+    dings = dsp.mix([score.pings(dsp.mstf(320), dsp.stf(100), (200, 300)), score.pings(dsp.mstf(321), dsp.stf(40), (201, 301))])
+
+    out += dsp.mix([opening, dsp.env(pings, 'line'), dsp.env(dings, 'line')], False, 3.0)
+    print 'generated', dsp.cycle_count, 'cycles'
+
+    out += dsp.mix([score.bells_opening(), dsp.fill(dings, dsp.stf(26.5))])
+    out += dsp.mix([score.bells_opening(), dsp.fill(dings, dsp.stf(26.5))])
 
     out = dsp.write(out, 'render', True)
 
@@ -28,31 +36,93 @@ def main(out=''):
 class Score:
     """ structure, score """
 
-    def __init__(self):
-        # Set audio params
-        dsp.audio_params = dsp.default_params 
-
-    def pings(self, grain_size, length, out=''):
-        tone = dsp.tone(grain_size, 100 * 2**6, 'sine', 0.05)
-        tone2 = dsp.tone(grain_size, 75 * 2**6, 'sine', 0.05)
+    def pings(self, grain_size, length, freqs, out=''):
+        print 'ping!', grain_size, length, freqs
+        tone = dsp.tone(grain_size, freqs[0], 'sine', 0.1)
+        tone2 = dsp.tone(grain_size, freqs[1], 'sine', 0.1)
+        print type(tone)
         tone = dsp.mix([tone, tone2])
         out += ''.join([dsp.pulsar(tone, (1.0, 1.05, 'random'), (1.0, 1.0, 'line'), random.random()) for i in range(length / dsp.flen(tone))])
-        out = dsp.pulsar(out)
         return out
 
-    def opening(self, length, type='sine', out=''):
-        print 'opening!', length, type
+    def opening(self, length, amp=0.5, env_type='sine', out=''):
+        print 'opening!', length, env_type
+        cluster = dsp.mix([dsp.tone(dsp.stf(4.5), 50, 'sine', 0.3), dsp.tone(dsp.stf(1.5), 200, 'sine', 0.3), dsp.tone(dsp.stf(1.5), 150, 'sine', 0.3)])
+        out += dsp.mix([dsp.env(cluster, 'line'), dsp.tone(dsp.stf(2), 50, 'phasor', 0.2)], False)
+        out += ''.join([dsp.byte_string(random.randint(0, 3000)) for i in range(441)])
+        out += dsp.pad('', dsp.stf(1), 0)
+
         salty = random.random() * 0.01
-        type = 'line'
-        low = dsp.mix([dsp.env(dsp.tone(length, (i+1)*25.0 + salty, type, random.random() * 0.2), 'sine') for i in range(8)])
-        mid = dsp.mix([dsp.env(dsp.tone(length, (i+1)*75.1 + salty, type, random.random() * 0.2), 'sine') for i in range(24)])
-        type = 'random'
-        high = dsp.mix([dsp.env(dsp.tone(length, (i+1)*50.05 + salty, type, random.random() * 0.2), 'sine') for i in range(24)])
-        higher = dsp.mix([dsp.env(dsp.tone(length, (i+1)*100.05 + salty, type, random.random() * 0.2), 'sine') for i in range(12)])
+        env_type = 'line'
+        low = dsp.mix([dsp.env(dsp.tone(length, (i+1)*25.0 + salty, env_type, amp), 'sine') for i in range(8)])
+        mid = dsp.mix([dsp.env(dsp.tone(length, (i+1)*75.1 + salty, env_type, amp), 'sine') for i in range(24)])
+        env_type = 'random'
+        high = dsp.mix([dsp.env(dsp.tone(length, (i+1)*50.05 + salty, env_type, amp), 'sine') for i in range(24)])
+        higher = dsp.mix([dsp.env(dsp.tone(length, (i+1)*100.05 + salty, env_type, amp), 'sine') for i in range(12)])
 
         out += dsp.mix([low,mid, dsp.env(dsp.mix([high, higher]), 'line')])
         
         return out
+
+    def bells_opening(self, out=''):
+
+        notes = [
+            [(200, dsp.stf(3), 0.3), (199, dsp.stf(5.8), 0.4), (75, dsp.stf(4), 0.3)],
+            [(100, dsp.stf(3), 0.3), (201, dsp.stf(5.8), 0.4), (150, dsp.stf(3), 0.2)],
+            [(50, dsp.stf(3), 0.3), (300, dsp.stf(5.8), 0.4), (75 / 2, dsp.stf(3), 0.3)],
+        ]
+
+        streams = [self.bell_stream(n) for n in notes]
+        out += dsp.mix(streams)
+
+        notes[0][1] = (175, dsp.stf(5), 0.35)
+        notes[1][1] = (175 / 2, dsp.stf(5), 0.4)
+        notes[2][1] = (175 * 2, dsp.stf(5), 0.3)
+
+        notes[0][2] = (130, dsp.stf(3), 0.35)
+        notes[1][2] = (130 / 2, dsp.stf(3), 0.35)
+        notes[2][2] = (130 * 2, dsp.stf(3), 0.35)
+        streams = [self.bell_stream(n) for n in notes]
+        out += dsp.mix(streams)
+
+        notes[0][1] = (199, dsp.stf(6.5), 0.35)
+        notes[1][1] = (201 / 2, dsp.stf(6.5), 0.4)
+        notes[2][1] = (300 * 2, dsp.stf(6.5), 0.3)
+
+        notes[0][2] = (75, dsp.stf(5), 0.3)
+        notes[1][2] = (150, dsp.stf(5), 0.3)
+        notes[2][2] = (75 / 2, dsp.stf(5), 0.3)
+        streams = [self.bell_stream(n) for n in notes]
+        out += dsp.mix(streams)
+
+        notes[0][0] = (130 / 2, dsp.stf(5), 0.35)
+        notes[1][0] = (130, dsp.stf(4), 0.4)
+        notes[2][0] = (130 / 4, dsp.stf(4), 0.3)
+
+        notes[0][2] = (120, dsp.stf(8), 0.4)
+        notes[1][2] = (120 / 2, dsp.stf(8), 0.4)
+        notes[2][2] = (120 / 4, dsp.stf(8), 0.4)
+
+        notes[0][1] = (199, dsp.stf(4), 0.3)
+        notes[1][1] = (201, dsp.stf(4), 0.3)
+        notes[2][1] = (300, dsp.stf(4), 0.3)
+
+        streams = [self.bell_stream(n) for n in notes]
+        out += dsp.mix(streams)
+
+        return out
+
+    def bell_stream(self, notes):
+        bells = [self.bell(n[0], n[1], n[2]) for n in notes]
+        return ''.join(bells)
+
+    def bell(self, freq, length, amp):
+        bell = dsp.tone(length, freq, 'sine', amp)
+        bell = dsp.mix([dsp.pulsar(bell, (1.0, 1.008, 'random'), (0.0, 1.0, 'phasor'), random.random()) for i in range(10)], True, 2.0)
+
+        return bell
+        
+        
 
       
 if __name__ == '__main__':
