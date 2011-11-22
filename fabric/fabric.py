@@ -13,7 +13,7 @@ from datetime import datetime
 audio_params = (2, 2, 44100, 0, "NONE", "not_compressed") 
 snddir = '' 
 dsp_grain = 64
-env_min = 8
+env_min = 2 
 cycle_count = 0
 
 def interleave(list_one, list_two):
@@ -92,7 +92,7 @@ def transpose(audio_string, amount):
 def byte_string(number):
     return struct.pack("<h", number)
 
-def tone(length=44100, freq=440, wavetype='sine', amp=1.0):
+def tone(length=44100, freq=440, wavetype='sine2pi', amp=1.0):
     cycles = (length / dsp_grain) / htf(freq) 
 
     print 'tone!', cycles, freq, length, wavetype, amp
@@ -110,9 +110,9 @@ def tone(length=44100, freq=440, wavetype='sine', amp=1.0):
     print
     return freqs
 
-def cycle(freq, wavetype='sine', amp=1.0):
+def cycle(freq, wavetype='sine2pi', amp=1.0):
     wavecycle = wavetable(wavetype, htf(freq))
-    return ''.join([byte_string(cap(amp * s * 32767, 32767)) for s in wavecycle])
+    return ''.join([byte_string(cap(amp * s * 32767, 32767, -32768)) for s in wavecycle])
 
 def scale(low_target, high_target, low, high, pos):
     pos = float(pos - low) / float(high - low) 
@@ -161,6 +161,8 @@ def wavetable(type="sine", size=512):
         wtable = [math.cos(i * math.pi * 2) for i in frange(size)]
     elif type == "cos":
         wtable = [math.cos(i * math.pi) for i in frange(size)]
+    elif type == "saw":
+        wtable = [(i - 1.0) * 2.0 for i in frange(size)]
     elif type == "line":
         wtable = [i for i in frange(size)]
     elif type == "phasor":
