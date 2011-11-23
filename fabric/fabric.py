@@ -146,28 +146,34 @@ def breakpoint(values, size=512, range_out=(0,1)):
 
     return groups
 
-def wavetable(type="sine", size=512):
+def wavetable(wtype="sine", size=512):
     wtable = []
-    wave_types = ["sine", "cos", "line", "phasor", "sine2pi", "cos2pi"]
+    wave_types = ["sine", "cos", "line", "phasor", "sine2pi", "cos2pi", "vary"]
 
-    if type == "random":
-        type = wave_types[random.randint(0, len(wave_types) - 1)]
+    if wtype == "random":
+        wtype = wave_types[random.randint(0, len(wave_types) - 1)]
 
-    if type == "sine":
+    if wtype == "sine":
         wtable = [math.sin(i * math.pi) for i in frange(size)]
-    elif type == "sine2pi":
+    elif wtype == "sine2pi":
         wtable = [math.sin(i * math.pi * 2) for i in frange(size)]
-    elif type == "cos2pi":
+    elif wtype == "cos2pi":
         wtable = [math.cos(i * math.pi * 2) for i in frange(size)]
-    elif type == "cos":
+    elif wtype == "cos":
         wtable = [math.cos(i * math.pi) for i in frange(size)]
-    elif type == "saw":
+    elif wtype == "saw":
         wtable = [(i - 1.0) * 2.0 for i in frange(size)]
-    elif type == "line":
+    elif wtype == "line":
         wtable = [i for i in frange(size)]
-    elif type == "phasor":
+    elif wtype == "phasor":
         wtable = wavetable("line", size)
         list.reverse(wtable)
+    elif wtype == "vary":
+        if size < 10:
+            print size
+            wtable = wavetable("random", size)
+        else:
+            wtable = breakpoint([random.random() for i in range(4)], size) 
 
     wtable[0] = 0.0
     wtable[-1] = 0.0
@@ -502,7 +508,10 @@ def pulsaret(slice, params, index):
     if target_rate == audio_params[2]:
         return slice
     else:
-        slice = audioop.ratecv(slice, audio_params[0], audio_params[1], audio_params[2], target_rate, None)
+        if target_rate < dsp_grain or target_rate > 2147483647:
+            print target_rate
+            
+        slice = audioop.ratecv(slice, audio_params[0], audio_params[1], audio_params[2], cap(target_rate, 2147483647, dsp_grain), None)
         return slice[0]
 
 def fnoise(sound, coverage):
