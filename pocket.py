@@ -20,8 +20,9 @@ def main(out=''):
     out += dsp.mix([opening, score.bells_opening(), dsp.env(pings, 'line')], False)
     print 'generated', dsp.cycle_count, 'cycles'
 
-    out += dsp.mix([score.bells_opening(), dsp.fill(pings, dsp.stf(26.5))])
-    out += dsp.mix([score.bells_opening(), dsp.fill(pings, dsp.stf(26.5))])
+    #out += dsp.mix([score.bells_opening(), dsp.fill(pings, dsp.stf(26.5))])
+    out += dsp.mix([score.bells_opening(), dsp.env(dsp.mix([score.swells_opening(dsp.stf(27), 150 * 3), score.swells_opening(dsp.stf(27), 175 * 3)]), 'line'), dsp.fill(pings, dsp.stf(26.5))], False)
+    out += dsp.mix([score.bells_opening(), dsp.env(dsp.mix([score.swells_opening(dsp.stf(27), 150 * 3), score.swells_opening(dsp.stf(27), 175 * 3)]), 'phasor'), dsp.fill(pings, dsp.stf(26.5))], False)
 
     out = dsp.write(out, 'render', True)
 
@@ -60,6 +61,11 @@ class Score:
 
         out += dsp.amp(dsp.mix([low,mid, dsp.env(dsp.mix([high, higher]), 'line')]), 0.7)
         
+        return out
+
+    def swells_opening(self, length, pitch, out=''):
+        out += dsp.mix([dsp.pulsar(dsp.tone(length, pitch, 'sine2pi', 0.15), (1.0, 1.05, 'random'), (0.6, 1.0, 'vary'), random.random()) for i in range(3)])
+
         return out
 
     def bells_opening(self, out=''):
