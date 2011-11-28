@@ -21,8 +21,8 @@ def main(out=''):
     print 'generated', dsp.cycle_count, 'cycles'
 
     #out += dsp.mix([score.bells_opening(), dsp.fill(pings, dsp.stf(26.5))])
-    out += dsp.mix([score.bells_opening(), dsp.env(dsp.mix([score.swells_opening(dsp.stf(27), 150 * 3), score.swells_opening(dsp.stf(27), 175 * 3)]), 'line'), dsp.fill(pings, dsp.stf(26.5))], False)
-    out += dsp.mix([score.bells_opening(), dsp.env(dsp.mix([score.swells_opening(dsp.stf(27), 150 * 3), score.swells_opening(dsp.stf(27), 175 * 3)]), 'phasor'), dsp.fill(pings, dsp.stf(26.5))], False)
+    out += dsp.mix([score.bells_opening(), dsp.env(dsp.mix([score.swells_opening(dsp.stf(50), 150 * 1.5), score.swells_opening(dsp.stf(50), 175 * 1.5)]), 'line'), dsp.fill(pings, dsp.stf(26.5))], False)
+    out += dsp.mix([score.bells_opening(), dsp.env(dsp.mix([score.swells_opening(dsp.stf(50), 150 * 1.5), score.swells_opening(dsp.stf(50), 175 * 1.5)]), 'phasor'), dsp.fill(pings, dsp.stf(26.5))], True)
 
     out = dsp.write(out, 'render', True)
 
