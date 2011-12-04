@@ -13,8 +13,8 @@ def main(out=''):
     dsp.snddir = 'sounds/'
     score = Score()
 
-    #pings = dsp.mix([score.pings(dsp.mstf(100), dsp.stf(40), (50 * 2**6, 75 * 2**6)), score.pings(dsp.mstf(101), dsp.stf(40), (50 * 2**6, 75 * 2**6))])
-    #out += dsp.mix([score.opening(dsp.stf(120)), score.bells_opening(), dsp.env(pings, 'line')], False)
+    pings = dsp.mix([score.pings(dsp.mstf(100), dsp.stf(40), (50 * 2**6, 75 * 2**6)), score.pings(dsp.mstf(101), dsp.stf(40), (50 * 2**6, 75 * 2**6))])
+    out += dsp.mix([score.opening(dsp.stf(120)), score.bells_opening(), dsp.env(pings, 'line')], False)
 
     out += score.bells_seqA()
 
@@ -35,17 +35,18 @@ class Score:
             self.pings(dsp.mstf(101), dsp.stf(40), (50 * 2**6, 80 * 2**6))])
         phraseA = dsp.mix([
             self.bells_opening(), 
-            dsp.env(dsp.mix([self.swells_opening(dsp.stf(50), 150 * 1.5), self.swells_opening(dsp.stf(50), 175 * 1.5)]), 'line'), 
+            dsp.env(dsp.mix([self.swells_opening(dsp.stf(60), 150 * 1.5), self.swells_opening(dsp.stf(60), 175 * 1.5)]), 'line'), 
             dsp.fill(pings, dsp.stf(26.5))], False)
         phraseB = dsp.mix([
             self.bells_opening(), 
-            dsp.env(dsp.mix([self.swells_opening(dsp.stf(50), 150 * 1.5), self.swells_opening(dsp.stf(50), 175 * 1.5)]), 'phasor'), 
+            dsp.env(dsp.mix([self.swells_opening(dsp.stf(60), 150 * 1.5), self.swells_opening(dsp.stf(60), 175 * 1.5)]), 'phasor'), 
             dsp.fill(pings, dsp.stf(26.5))], True)
 
-        phraseAa = dsp.fill(dsp.mix([self.swells_opening(dsp.flen(phraseA), 65.4 * i, 'saw', 0.25, 1.003) for i in range(4)]), dsp.flen(phraseA))
-        phraseBa = dsp.fill(dsp.mix([self.swells_opening(dsp.flen(phraseB), 65.4 * i, 'saw', 0.3, 1.0) for i in range(6)]), dsp.flen(phraseB))
+        phraseAa = dsp.mix([self.swells_opening(dsp.stf(60), 32.7 * i, 'saw', 0.15, 1.03) for i in range(4)])
+        phraseBa = dsp.mix([self.swells_opening(dsp.stf(60), 65.4 * i, 'saw', 0.1, 1.01) for i in range(6)])
+        under = phraseAa + phraseBa
 
-        out += dsp.mix([phraseA + phraseB, phraseAa + phraseBa])
+        out += dsp.mix([phraseA + phraseB, under])
 
         return out
         
@@ -61,9 +62,9 @@ class Score:
 
     def opening(self, length, amp=0.5, env_type='sine2pi', out=''):
         print 'opening!', length, env_type
-        cluster = dsp.mix([dsp.tone(dsp.stf(4.5), 50, 'sine2pi', 0.3), dsp.tone(dsp.stf(1.5), 200, 'sine2pi', 0.3), dsp.tone(dsp.stf(1.5), 150, 'sine2pi', 0.3)])
+        cluster = dsp.mix([dsp.tone(dsp.stf(4.5), 50, 'vary', 0.3), dsp.tone(dsp.stf(1.5), 200, 'sine2pi', 0.3), dsp.tone(dsp.stf(1.5), 150, 'saw', 0.3)])
         out += dsp.mix([dsp.env(cluster, 'line'), dsp.tone(dsp.stf(2), 50, 'saw', 0.1)], False)
-        out += ''.join([dsp.byte_string(random.randint(0, 3000)) for i in range(441)])
+        out += ''.join([dsp.pad(dsp.byte_string(random.randint(0, 3000)), random.randint(0, 3), random.randint(0, 6)) for i in range(4410)])
         out += dsp.pad('', dsp.stf(1), 0)
 
         salty = random.random() * 0.01
