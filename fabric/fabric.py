@@ -16,6 +16,15 @@ dsp_grain = 64
 env_min = 2 
 cycle_count = 0
 
+def lget(list, index, default=True):
+    try:
+        return list[index]
+    except IndexError:
+        if default == True:
+            return list[-1]
+        else:
+            return list[0]
+
 def interleave(list_one, list_two):
     # find the length of the longest list
     if len(list_one) > len(list_two):
