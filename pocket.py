@@ -13,6 +13,8 @@ def main(out=''):
     dsp.snddir = 'sounds/'
     score = Score()
 
+    # sending dreams to she downstream
+
     pings = dsp.mix([score.pings(dsp.mstf(100), dsp.stf(40), (50 * 2**6, 75 * 2**6)), score.pings(dsp.mstf(101), dsp.stf(40), (50 * 2**6, 75 * 2**6))])
     out += dsp.mix([score.opening(dsp.stf(120)), score.bells_opening(), dsp.env(pings, 'line')], False)
 
