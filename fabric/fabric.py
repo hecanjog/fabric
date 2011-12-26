@@ -1,13 +1,15 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
 
-"""
-    Ding dong
-    Erik Schoster
-    www.hecanjog.com
+""" Ding dong :: www.hecanjog.com
 """
 
-import os, sys, wave, audioop, math, random, string, shutil, struct
+import wave
+import audioop
+import math
+import random
+import struct
+
 from datetime import datetime
 
 audio_params = (2, 2, 44100, 0, "NONE", "not_compressed") 
@@ -136,6 +138,8 @@ def cap(num, max, min=0):
     return num
 
 def seedrand():
+    import bin2ascii
+
     if len(rseed) == 0:
         rseed = cycle(440)
 
