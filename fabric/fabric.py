@@ -104,14 +104,14 @@ def byte_string(number):
 def tone(length=44100, freq=440, wavetype='sine2pi', amp=1.0):
     cyclelen = htf(freq * 0.99)
 
-    blocksize = 16
+    blocksize = 64 * 2 
     numcycles = length / cyclelen
     numblocks = numcycles / blocksize
 
     if numcycles % blocksize > 0:
         numblocks += 1
 
-    cycles = ''.join([4 * cycle(freq * scale(0.99, 1.0, 0, numcycles - 1, i), wavetype, amp) for i in range(numblocks)])
+    cycles = ''.join([blocksize * cycle(freq * scale(0.99, 1.0, 0, numcycles - 1, i), wavetype, amp) for i in range(numblocks)])
 
     if(flen(cycles) < length):
         print 'too short!', fts(length - flen(cycles))
@@ -199,7 +199,7 @@ def wavetable(wtype="sine", size=512):
         list.reverse(wtable)
     elif wtype == "vary":
         if size < 10:
-            print size
+            print 'vary size small:', size
             wtable = wavetable("random", size)
         else:
             wtable = breakpoint([random.random() for i in range(4)], size) 

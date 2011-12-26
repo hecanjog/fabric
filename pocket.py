@@ -46,7 +46,7 @@ class Score:
             self.bells_opening(), 
             dsp.env(dsp.mix([self.swells_opening(dsp.stf(60), 150 * 1.5), self.swells_opening(dsp.stf(60), 175 * 1.5)]), 'phasor'), 
             dsp.fill(pings, dsp.stf(26.5))], True)
-        out += dsp.mix([phraseB, dsp.mix([self.swells_opening(dsp.stf(30), 65.4 * i, 'saw', 0.1, 1.01) for i in range(6)])])
+        out += dsp.mix([phraseB, dsp.mix([self.swells_opening(dsp.stf(30), 0.5 * 65.4 * i, 'saw', 0.1, 1.01) for i in range(6)])])
 
         return out
         
@@ -61,10 +61,6 @@ class Score:
 
     def opening(self, length, amp=0.5, env_type='sine2pi', out=''):
         print 'opening!', length, env_type
-        cluster = dsp.mix([dsp.tone(dsp.stf(4.5), 50, 'vary', 0.3), dsp.tone(dsp.stf(1.5), 200, 'sine2pi', 0.3), dsp.tone(dsp.stf(1.5), 150, 'saw', 0.3)])
-        out += dsp.mix([dsp.env(cluster, 'line'), dsp.tone(dsp.stf(2), 50, 'saw', 0.1)], False)
-        out += ''.join([dsp.pad(dsp.byte_string(random.randint(0, 3000)), random.randint(0, 3), random.randint(0, 6)) for i in range(4410)])
-        out += dsp.pad('', dsp.stf(1), 0)
 
         salty = random.random() * 0.01
         env_type = 'saw'
@@ -125,13 +121,13 @@ class Score:
         notes[1][1] = (201, dsp.stf(4), 0.3)
         notes[2][1] = (300, dsp.stf(4), 0.3)
 
-        streams = [self.bell_stream(n) for n in notes]
+        streams = [self.bell_stream(n, 2.0) for n in notes]
         out += dsp.mix(streams)
 
         return out
 
-    def bell_stream(self, notes):
-        bells = [self.bell(n[0], n[1], n[2]) for n in notes]
+    def bell_stream(self, notes, mult=1.0):
+        bells = [self.bell(n[0] * mult, n[1], n[2]) for n in notes]
         return ''.join(bells)
 
     def bell(self, freq, length, amp):
