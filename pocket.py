@@ -35,20 +35,18 @@ class Score:
         pings = dsp.mix([
             self.pings(dsp.mstf(100), dsp.stf(40), (50 * 2**6, 80 * 2**6)), 
             self.pings(dsp.mstf(101), dsp.stf(40), (50 * 2**6, 80 * 2**6))])
+
         phraseA = dsp.mix([
             self.bells_opening(), 
             dsp.env(dsp.mix([self.swells_opening(dsp.stf(60), 150 * 1.5), self.swells_opening(dsp.stf(60), 175 * 1.5)]), 'line'), 
             dsp.fill(pings, dsp.stf(26.5))], False)
+        out += dsp.mix([phraseA, dsp.mix([self.swells_opening(dsp.stf(30), 32.7 * i, 'saw', 0.15, 1.03) for i in range(4)])])
+
         phraseB = dsp.mix([
             self.bells_opening(), 
             dsp.env(dsp.mix([self.swells_opening(dsp.stf(60), 150 * 1.5), self.swells_opening(dsp.stf(60), 175 * 1.5)]), 'phasor'), 
             dsp.fill(pings, dsp.stf(26.5))], True)
-
-        phraseAa = dsp.mix([self.swells_opening(dsp.stf(60), 32.7 * i, 'saw', 0.15, 1.03) for i in range(4)])
-        phraseBa = dsp.mix([self.swells_opening(dsp.stf(60), 65.4 * i, 'saw', 0.1, 1.01) for i in range(6)])
-        under = phraseAa + phraseBa
-
-        out += dsp.mix([phraseA + phraseB, under])
+        out += dsp.mix([phraseB, dsp.mix([self.swells_opening(dsp.stf(30), 65.4 * i, 'saw', 0.1, 1.01) for i in range(6)])])
 
         return out
         
@@ -57,7 +55,6 @@ class Score:
         print 'ping!', grain_size, length, freqs
         tone = dsp.tone(grain_size, freqs[0], 'sine2pi', 0.05)
         tone2 = dsp.tone(grain_size, freqs[1], 'saw', 0.05)
-        print type(tone)
         tone = dsp.mix([tone, tone2])
         out += ''.join([dsp.pulsar(tone, (1.0, 1.05, 'random'), (1.0, 1.0, 'line'), random.random()) for i in range(length / dsp.flen(tone))])
         return out

@@ -102,26 +102,27 @@ def byte_string(number):
     return struct.pack("<h", number)
 
 def tone(length=44100, freq=440, wavetype='sine2pi', amp=1.0):
-    cycles = (length / dsp_grain) / htf(freq) 
+    cyclelen = htf(freq * 0.99)
 
-    print 'tone!', cycles, freq, length, wavetype, amp
+    blocksize = 16
+    numcycles = length / cyclelen
+    numblocks = numcycles / blocksize
 
-    if length / dsp_grain < htf(freq) or cycles < 2:
-        return cycle(freq, wavetype, amp) * 2
+    if numcycles % blocksize > 0:
+        numblocks += 1
 
-    freqs = [dsp_grain * cycle(freq * scale(0.99, 1.0, 0, cycles - 1, i), wavetype, amp) for i in range(cycles)]
+    cycles = ''.join([4 * cycle(freq * scale(0.99, 1.0, 0, numcycles - 1, i), wavetype, amp) for i in range(numblocks)])
 
-    global cycle_count
-    cycle_count += 1
-
-    freqs = ''.join(freqs)
-    print 'generated a tone', fts(flen(freqs)), 'seconds long'
+    if(flen(cycles) < length):
+        print 'too short!', fts(length - flen(cycles))
+    print 'generated a tone', fts(flen(cycles)), 'seconds long'
     print
-    return freqs
+
+    return cycles 
 
 def cycle(freq, wavetype='sine2pi', amp=1.0):
     wavecycle = wavetable(wavetype, htf(freq))
-    return ''.join([byte_string(cap(amp * s * 32767, 32767, -32768)) for s in wavecycle])
+    return ''.join([byte_string(cap(amp * s * 32767, 32767, -32768)) * audio_params[0] for s in wavecycle])
 
 def scale(low_target, high_target, low, high, pos):
     pos = float(pos - low) / float(high - low) 
@@ -133,6 +134,25 @@ def cap(num, max, min=0):
     elif num > max:
         num = max
     return num
+
+def seedrand():
+    if len(rseed) == 0:
+        rseed = cycle(440)
+
+    sseed = bin2ascii.b2a_qp(rseed, False, False)
+    sseed = list(sseed)
+    lseed = []
+
+    for i, s in enumerate(sseed):
+        lseed.append(ord(s) * ord(sseed[len(sseed) - i]))
+
+    print lsseed
+
+def randint():
+    pass
+
+def rand():
+    pass
 
 def breakpoint(values, size=512, range_out=(0,1)):
     if len(values) > 1:
@@ -251,10 +271,6 @@ def mix(layers, leftalign=True, boost=2.0):
             layer = pad(layer, padding, 0)
 
         layer = audioop.mul(layer, audio_params[1], attenuation)
-
-        print 'out', type(out), len(out), flen(out), fts(flen(out))
-        print 'layer', type(layer), len(layer), flen(layer), fts(flen(layer))
-        print 'output len', fts(output_length), output_length
 
         if len(layer) != ftc(output_length) or len(out) != ftc(output_length):
             dif = int(math.fabs(len(layer) - len(out)))
