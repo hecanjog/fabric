@@ -13,7 +13,7 @@ def main(out=''):
     dsp.snddir = 'sounds/'
     score = Score()
 
-    out += score.opening()
+    out += score.section(dsp.stf(27))
 
     out = dsp.write(out, 'render', True)
 
@@ -26,8 +26,36 @@ def main(out=''):
 class Score:
     """ structure, score """
 
-    def opening(self, out=''):
-        out += dsp.tone(dsp.stf(10), 440, 'sine2pi', 0.3)
+    pitches = [
+        220.0,
+        440.0,
+        math.sqrt(5) * 220.0,
+        math.sqrt(5) * 440.0,
+        880.0,
+      ]
+
+    def section(self, length, out=''):
+        layers = []
+
+        layers.append(self.sines(length))
+        layers.append(self.sines(length))
+
+        out += dsp.mix(layers) 
+        
+        return out
+
+    def trains(self, out=''):
+
+        return out
+
+    def sines(self, length, out=''):
+        layers = [ dsp.tone( length 
+                            ,self.pitches[dsp.randint(0,4)] 
+                            ,'sine2pi' 
+                            ,dsp.rand(0.01, 0.2) ) 
+                   for i in range(dsp.randint(3,6)) ]
+
+        out += dsp.mix(layers)
         
         return out
 

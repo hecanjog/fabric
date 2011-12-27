@@ -9,6 +9,7 @@ import audioop
 import math
 import random
 import struct
+import string
 
 from datetime import datetime
 
@@ -152,11 +153,13 @@ def seedrand():
 
     print lsseed
 
-def randint():
-    pass
+    return False
 
-def rand():
-    pass
+def randint(lowbound=0, highbound=1):
+    return random.randint(lowbound, highbound)
+
+def rand(lowbound=0, highbound=1):
+    return random.random() * (highbound - lowbound) + lowbound
 
 def breakpoint(values, size=512, range_out=(0,1)):
     if len(values) > 1:
