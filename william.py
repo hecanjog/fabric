@@ -13,7 +13,10 @@ def main(out=''):
     dsp.snddir = 'sounds/'
     score = Score()
 
-    out += score.section(dsp.stf(27))
+    section_lengths = score.section_lengths(dsp.stf(4))
+
+    for l in section_lengths:
+        out += score.section(l)
 
     out = dsp.write(out, 'render', True)
 
@@ -34,6 +37,21 @@ class Score:
         880.0,
       ]
 
+    ratios = [
+        1.0,
+        math.sqrt(2),
+        2.0,
+        math.sqrt(5),
+        math.sqrt(8),
+      ]
+
+    def section_lengths(self, total_length):
+        section_lengths = []
+        for r in self.ratios:
+            section_lengths.append(int(total_length * r))
+
+        return section_lengths
+
     def section(self, length, out=''):
         layers = []
 
@@ -49,10 +67,10 @@ class Score:
         return out
 
     def sines(self, length, out=''):
-        layers = [ dsp.tone( length 
+        layers = [ dsp.pulsar(dsp.tone( length 
                             ,self.pitches[dsp.randint(0,4)] 
                             ,'sine2pi' 
-                            ,dsp.rand(0.01, 0.2) ) 
+                            ,dsp.rand(0.01, 0.2) )) 
                    for i in range(dsp.randint(3,6)) ]
 
         out += dsp.mix(layers)
