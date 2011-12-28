@@ -3,38 +3,36 @@
 
 import fabric.fabric as dsp
 import random
-import time
 import audioop 
 import math
 
 def main(out=''):
-    timer = time.time()
-
+    dsp.timer('start')
     dsp.snddir = 'sounds/'
     score = Score()
 
-    section_lengths = score.section_lengths(dsp.stf(4))
+    timings = score.timings(dsp.stf(10))
 
-    for l in section_lengths:
-        out += score.section(l)
+    for t in timings:
+        out += score.section(t)
 
     out = dsp.write(out, 'render', True)
 
     # Show render time
-    timer = time.time() - timer
-    min = int(timer) / 60
-    sec = timer - (min * 60)
-    print 'render time:', min, 'min', sec, 'sec'
+    dsp.timer('stop')
 
 class Score:
     """ structure, score """
 
+    tonic = 440.0
+
     pitches = [
-        220.0,
-        440.0,
-        math.sqrt(5) * 220.0,
-        math.sqrt(5) * 440.0,
-        880.0,
+        (1.0 / 4.0) * tonic,
+        (2.0 / 4.0) * tonic,
+        (math.sqrt(5) / 4.0) * tonic,
+        (math.sqrt(8) / 4.0) * tonic,
+        (3.0 / 4.0) * tonic,
+        (4.0 / 4.0) * tonic,
       ]
 
     ratios = [
@@ -45,7 +43,7 @@ class Score:
         math.sqrt(8),
       ]
 
-    def section_lengths(self, total_length):
+    def timings(self, total_length):
         section_lengths = []
         for r in self.ratios:
             section_lengths.append(int(total_length * r))
@@ -68,7 +66,7 @@ class Score:
 
     def sines(self, length, out=''):
         layers = [ dsp.pulsar(dsp.tone( length 
-                            ,self.pitches[dsp.randint(0,4)] 
+                            ,self.pitches[dsp.randint(0,len(self.pitches)-1)] 
                             ,'sine2pi' 
                             ,dsp.rand(0.01, 0.2) )) 
                    for i in range(dsp.randint(3,6)) ]

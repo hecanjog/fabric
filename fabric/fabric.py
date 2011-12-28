@@ -10,6 +10,7 @@ import math
 import random
 import struct
 import string
+import time
 
 from datetime import datetime
 
@@ -18,6 +19,7 @@ snddir = ''
 dsp_grain = 64
 env_min = 2 
 cycle_count = 0
+thetime = 0
 
 def lget(list, index, default=True):
     try:
@@ -93,6 +95,19 @@ def list_split(list, packet_size):
 
 def ratio(numerator, denominator):
     return float(numerator) / float(denominator)
+
+def timer(cmd='start'):
+    global thetime
+    if cmd == 'start':
+        thetime = time.time()
+        print 'Started render at timestamp', thetime
+        return thetime 
+    elif cmd == 'stop':
+        thetime = time.time() - thetime
+        themin = int(thetime) / 60
+        thesec = thetime - (themin * 60)
+        print 'Render time:', themin, 'min', thesec, 'sec'
+        return thetime
 
 def transpose(audio_string, amount):
     amount = 1.0 / amount
