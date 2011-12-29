@@ -8,7 +8,7 @@ import math
 
 def main(out=''):
     dsp.timer('start')
-    dsp.snddir = 'sounds/'
+    dsp.snddir = 'sounds/william/'
     score = Score()
 
     timings = score.timings(dsp.stf(10))
@@ -54,13 +54,20 @@ class Score:
         layers = []
 
         layers.append(self.sines(length))
-        layers.append(self.sines(length))
+        layers.append(self.trains(length))
 
         out += dsp.mix(layers) 
         
         return out
 
-    def trains(self, out=''):
+    def trains(self, length, out=''):
+        layers = [ dsp.tone( length
+                            ,self.pitches[dsp.randint(0, len(self.pitches)-1)]
+                            ,'impulse'
+                            ,dsp.rand(0.01, 0.2) )
+                    for i in range(dsp.randint(3,6)) ]
+
+        out += dsp.mix(layers)
 
         return out
 

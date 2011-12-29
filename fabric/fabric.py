@@ -119,17 +119,18 @@ def transpose(audio_string, amount):
 def byte_string(number):
     return struct.pack("<h", number)
 
-def tone(length=44100, freq=440, wavetype='sine2pi', amp=1.0):
+def tone(length=44100, freq=440, wavetype='sine2pi', amp=1.0, blocksize=0):
     cyclelen = htf(freq * 0.99)
-
-    blocksize = 64 * 2 
     numcycles = length / cyclelen
-    numblocks = numcycles / blocksize
 
-    if numcycles % blocksize > 0:
-        numblocks += 1
+    if blocksize > 0:
+        numblocks = numcycles / blocksize
+        if numcycles % blocksize > 0:
+            numblocks += 1
 
-    cycles = ''.join([blocksize * cycle(freq * scale(0.99, 1.0, 0, numcycles - 1, i), wavetype, amp) for i in range(numblocks)])
+        cycles = ''.join([blocksize * cycle(freq * rand(0.99, 1.0), wavetype, amp) for i in range(numblocks)])
+    else:
+        cycles = numcycles * cycle(freq * rand(0.99, 1.0), wavetype, amp)
 
     if(flen(cycles) < length):
         print 'too short!', fts(length - flen(cycles))
@@ -203,7 +204,6 @@ def wavetable(wtype="sine", size=512):
 
     if wtype == "random":
         wtype = wave_types[random.randint(0, len(wave_types) - 1)]
-
     if wtype == "sine":
         wtable = [math.sin(i * math.pi) for i in frange(size)]
     elif wtype == "sine2pi":
@@ -219,6 +219,9 @@ def wavetable(wtype="sine", size=512):
     elif wtype == "phasor":
         wtable = wavetable("line", size)
         list.reverse(wtable)
+    elif wtype == "impulse":
+        wtable = [float(random.randint(-1, 1)) for i in range(size / random.randint(2, 12))]
+        wtable.extend([0.0 for i in range(size - len(wtable))])
     elif wtype == "vary":
         if size < 10:
             print 'vary size small:', size
