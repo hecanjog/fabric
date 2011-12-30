@@ -63,8 +63,7 @@ def packet_shuffle(list, packet_size):
         lists = list_split(list, packet_size)
         shuffled_lists = []
         for sublist in lists:
-            random.shuffle(sublist)
-            shuffled_lists.append(sublist)
+            shuffled_lists.append(randshuffle(sublist))
 
         big_list = []
         for shuffled_list in shuffled_lists:
@@ -176,6 +175,21 @@ def randint(lowbound=0, highbound=1):
 
 def rand(lowbound=0, highbound=1):
     return random.random() * (highbound - lowbound) + lowbound
+
+def randchoose(items):
+    return items[randint(0, len(items)-1)]
+
+def randshuffle(input):
+    items = input[:]
+    shuffled = []
+    for i in range(len(items)):
+        if len(items) > 0:
+            item = randchoose(items)
+            shuffled.append(item)
+            items.remove(item)
+
+    return shuffled 
+
 
 def breakpoint(values, size=512, range_out=(0,1)):
     if len(values) > 1:
