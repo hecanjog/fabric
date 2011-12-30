@@ -8,18 +8,22 @@ import math
 
 def main(out=''):
     dsp.timer('start')
+    dsp.seed('William')
     dsp.snddir = 'sounds/william/'
     score = Score()
 
     timings = score.timings(dsp.stf(600))
 
-    for t in timings:
-        out += score.section(t)
+    #for t in timings:
+        #out += score.section(t)
+
+    out += score.section(timings[0])
 
     out = dsp.write(out, 'render', True)
 
     # Show render time
     dsp.timer('stop')
+    print dsp.sendstep, 'hashes calculated'
 
 class Score:
     """ structure, score """
@@ -106,7 +110,7 @@ class Score:
         return out
 
     def trains(self, length, out=''):
-        wtypes = ['sine2pi', 'saw', 'impulse']
+        wtypes = ['sine2pi', 'saw', 'cos2pi']
         trainlens = self.timings(length)
         for t in trainlens:
             if dsp.randint(0, 1) == 1:
@@ -119,7 +123,7 @@ class Score:
         return out
 
     def phases(self, length, out=''):
-        wtypes = ['sine2pi', 'saw', 'impulse']
+        wtypes = ['sine2pi', 'saw', 'cos2pi']
 
         layers = []
         
@@ -147,7 +151,7 @@ class Score:
 
 
     def pulses(self, length, out=''):
-        wtypes = ['sine2pi', 'saw', 'impulse']
+        wtypes = ['sine2pi', 'saw', 'cos2pi']
         layers = []
         wtype = wtypes[dsp.randint(0, len(wtypes)-1)]
         trains = [self.train(length, wtype) for i in range(dsp.randint(2, 4))]
