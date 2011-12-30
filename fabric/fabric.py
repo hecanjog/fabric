@@ -200,7 +200,7 @@ def breakpoint(values, size=512, range_out=(0,1)):
 
 def wavetable(wtype="sine", size=512):
     wtable = []
-    wave_types = ["sine", "cos", "line", "phasor", "sine2pi", "cos2pi", "vary"]
+    wave_types = ["sine", "cos", "line", "saw", "impulse", "phasor", "sine2pi", "cos2pi"]
 
     if wtype == "random":
         wtype = wave_types[random.randint(0, len(wave_types) - 1)]
