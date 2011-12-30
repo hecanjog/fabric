@@ -8,22 +8,23 @@ import math
 
 def main(out=''):
     dsp.timer('start')
-    dsp.seed('William')
+    dsp.seed('William!')
+
     dsp.snddir = 'sounds/william/'
     score = Score()
 
     timings = score.timings(dsp.stf(600))
 
-    #for t in timings:
-        #out += score.section(t)
+    for t in timings:
+        out += score.section(t)
 
-    out += score.section(timings[0])
+    #out += score.section(timings[0])
 
     out = dsp.write(out, 'render', True)
 
     # Show render time
     dsp.timer('stop')
-    print dsp.sendstep, 'hashes calculated'
+    print dsp.seedstep, 'hashes calculated'
 
 class Score:
     """ structure, score """
@@ -33,11 +34,9 @@ class Score:
     scale = [
         1.0,
         math.sqrt(2),
-        math.sqrt(3),
         2.0,
         math.sqrt(5),
         math.sqrt(8),
-        3.0,
         4.0,
       ]
 
