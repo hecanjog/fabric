@@ -218,27 +218,37 @@ def breakpoint(values, size=512, highval=1.0, lowval=0.0):
         values = [ 0.0, ['line', 1.0] ] 
 
     groups = []
-    clow = 0.0
+
+    try:
+        if len(values[0]) > 1:
+            chigh = 0.0 # First value cannot set wtype
+    except TypeError:
+        chigh = values[0]
+
+    gsize = size / (len(values)-1) 
+    gsizespill = size % (len(values)-1)
 
     for i, v in enumerate(values):
-        if i is not 0 and len(v) > 1:
-            wtype = v[0]
-            clow = chigh
-            chigh = v[1]
+        if i is not 0:
+            try:
+                if len(v) > 1:
+                    wtype = v[0]
+                    clow = chigh
+                    chigh = v[1]
 
-            gsize = size / (len(values)-1) 
+                if len(v) == 3:
+                    gsize = gsize * v[2]
+            except TypeError:
+                wtype = 'line'
+                clow = chigh
+                chigh = v
 
-            if len(v) == 3:
-                gsize = gsize * v[2]
-        else:
-            wtype = 'line'
-            clow = chigh
-            chigh = v
+            if v == values[-1]:
+                gsize += gsizespill 
 
-        if v == values[-1]:
-            gsize += size % (len(values)-1) 
+            groups.extend(wavetable(wtype, gsize, clow, chigh))
 
-        groups.extend(wavetable(wtype, gsize, clow, chigh))
+    print len(groups), size
 
     return groups
 
@@ -268,7 +278,7 @@ def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
         wtable = [float(randint(-1, 1)) for i in range(size / randint(2, 12))]
         wtable.extend([0.0 for i in range(size - len(wtable))])
     elif wtype == "vary":
-        btable = [ [wave_types[randint(0, len(wave_types)-1)], rand(lowval, highval)] for i in range(randint(4, 10)) ]
+        btable = [ [wave_types[randint(0, len(wave_types)-1)], rand(lowval, highval)] for i in range(randint(3, 30)) ]
         wtable = breakpoint(btable, size, highval, lowval) 
 
     wtable[0] = 0.0
@@ -280,7 +290,7 @@ def frange(steps, highval=1.0, lowval=0.0):
     if steps < 2:
         steps = 3 
 
-    return [ (i / float(steps-1)) * (highval - lowval) + lowval for i in range(steps)]
+    return  [ (i / float(steps-1)) * (highval - lowval) + lowval for i in range(steps)]
         
 
 def env(audio_string, wavetable_type="sine"):
