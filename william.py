@@ -42,7 +42,6 @@ class Score:
         1.0,
         math.sqrt(2),
         2.0,
-        math.sqrt(5),
         math.sqrt(8),
         4.0,
       ]
