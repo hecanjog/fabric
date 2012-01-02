@@ -135,10 +135,10 @@ def tone(length=44100, freq=440, wavetype='sine2pi', amp=1.0, blocksize=0):
     else:
         cycles = numcycles * cycle(freq * rand(0.99, 1.0), wavetype, amp)
 
-    if(flen(cycles) < length):
-        print 'too short!', fts(length - flen(cycles))
-    print 'generated a tone', fts(flen(cycles)), 'seconds long'
-    print
+    #if(flen(cycles) < length):
+        #print 'too short!', fts(length - flen(cycles))
+    #print 'generated a tone', fts(flen(cycles)), 'seconds long'
+    #print
 
     return cycles 
 
@@ -213,67 +213,75 @@ def randshuffle(input):
     return shuffled 
 
 
-def breakpoint(values, size=512, range_out=(0,1)):
-    if len(values) > 1:
-        steps = size / (len(values) - 1)
-        steps_remainder = size % (len(values) - 1)
-    else:
-        print 'breakpoint fail: one or fewer values'
+def breakpoint(values, size=512, highval=1.0, lowval=0.0):
+    if len(values) < 2:
+        values = [ 0.0, ['line', 1.0] ] 
 
     groups = []
+    clow = 0.0
 
     for i, v in enumerate(values):
-        if i == len(values) - 2:
-            steps += steps_remainder
-        
-        if i < len(values) - 1:
-            if steps - 1 > 0:
-                groups.extend([(c / float(steps - 1)) * (values[i+1] - v) + v for c in range(steps)]) 
-            else:
-                print size, steps, i, v, len(values), 'breakpoint fail'
+        if i is not 0 and len(v) > 1:
+            wtype = v[0]
+            clow = chigh
+            chigh = v[1]
+
+            gsize = size / (len(values)-1) 
+
+            if len(v) == 3:
+                gsize = gsize * v[2]
+        else:
+            wtype = 'line'
+            clow = chigh
+            chigh = v
+
+        if v == values[-1]:
+            gsize += size % (len(values)-1) 
+
+        groups.extend(wavetable(wtype, gsize, clow, chigh))
 
     return groups
 
-def wavetable(wtype="sine", size=512):
+def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
     wtable = []
-    wave_types = ["sine", "cos", "line", "saw", "impulse", "phasor", "sine2pi", "cos2pi"]
+    wave_types = ["sine", "cos", "line", "saw", "impulse", "phasor", "sine2pi", "cos2pi", "vary"]
 
     if wtype == "random":
         wtype = wave_types[randint(0, len(wave_types) - 1)]
+
     if wtype == "sine":
-        wtable = [math.sin(i * math.pi) for i in frange(size)]
+        wtable = [math.sin(i * math.pi) for i in frange(size, highval, lowval)]
     elif wtype == "sine2pi":
-        wtable = [math.sin(i * math.pi * 2) for i in frange(size)]
+        wtable = [math.sin(i * math.pi * 2) for i in frange(size, highval, lowval)]
     elif wtype == "cos2pi":
-        wtable = [math.cos(i * math.pi * 2) for i in frange(size)]
+        wtable = [math.cos(i * math.pi * 2) for i in frange(size, highval, lowval)]
     elif wtype == "cos":
-        wtable = [math.cos(i * math.pi) for i in frange(size)]
+        wtable = [math.cos(i * math.pi) for i in frange(size, highval, lowval)]
     elif wtype == "saw":
-        wtable = [(i - 1.0) * 2.0 for i in frange(size)]
+        wtable = [(i - 1.0) * 2.0 for i in frange(size, highval, lowval)]
     elif wtype == "line":
-        wtable = [i for i in frange(size)]
+        wtable = [i for i in frange(size, highval, lowval)]
     elif wtype == "phasor":
-        wtable = wavetable("line", size)
+        wtable = wavetable("line", size, highval, lowval)
         list.reverse(wtable)
     elif wtype == "impulse":
         wtable = [float(randint(-1, 1)) for i in range(size / randint(2, 12))]
         wtable.extend([0.0 for i in range(size - len(wtable))])
     elif wtype == "vary":
-        if size < 10:
-            print 'vary size small:', size
-            wtable = wavetable("random", size)
-        else:
-            wtable = breakpoint([rand() for i in range(4)], size) 
+        btable = [ [wave_types[randint(0, len(wave_types)-1)], rand(lowval, highval)] for i in range(randint(4, 10)) ]
+        wtable = breakpoint(btable, size, highval, lowval) 
 
     wtable[0] = 0.0
     wtable[-1] = 0.0
     
     return wtable
 
-def frange(steps):
-    if steps < env_min:
-        steps = env_min
-    return [ i / float(steps - 1) for i in range(steps)]
+def frange(steps, highval=1.0, lowval=0.0):
+    if steps < 2:
+        steps = 3 
+
+    return [ (i / float(steps-1)) * (highval - lowval) + lowval for i in range(steps)]
+        
 
 def env(audio_string, wavetable_type="sine"):
     packets = split(audio_string, dsp_grain)

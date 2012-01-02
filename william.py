@@ -5,26 +5,33 @@ import fabric.fabric as dsp
 import random
 import audioop 
 import math
+import sys
 
 def main(out=''):
+    s = 'williamthegoat'
+    dsp.seed(s)
+    sys.stdout = open('logs/'+s+'-log.txt', 'w')
+
     dsp.timer('start')
-    dsp.seed('William!')
 
     dsp.snddir = 'sounds/william/'
     score = Score()
 
-    timings = score.timings(dsp.stf(600))
+    timings = score.timings(dsp.stf(200))
+    timings.extend(score.timings(dsp.stf(300)))
+    timings.extend(score.timings(dsp.stf(200)))
 
     for t in timings:
         out += score.section(t)
 
     #out += score.section(timings[0])
 
-    out = dsp.write(out, 'render', True)
+    out = dsp.write(out, s, True)
 
     # Show render time
     dsp.timer('stop')
     print dsp.seedstep, 'hashes calculated'
+    sys.stdout.close()
 
 class Score:
     """ structure, score """
@@ -91,42 +98,50 @@ class Score:
 
         layers.append(dsp.amp(self.sines(length), 0.7))
         layers.append(dsp.amp(self.sines(length), 0.7))
-        layers.append(dsp.env(dsp.amp(self.sines(length), 0.7), 'random'))
+        layers.append(dsp.env(dsp.amp(self.sines(length), 1.1), 'vary'))
+        layers.append(dsp.env(dsp.amp(self.sines(length), 1.1), 'vary'))
 
         layers.append(dsp.amp(self.pulses(length), 2.0))
-        layers.append(dsp.env(dsp.amp(self.pulses(length), 2.0), 'random'))
+        layers.append(dsp.env(dsp.amp(self.pulses(length), 2.0), 'vary'))
 
         layers.append(dsp.amp(self.phases(length), 2.0))
-        layers.append(dsp.amp(self.phases(length), 2.0))
+        layers.append(dsp.amp(self.phases(length), 2.5))
+        layers.append(dsp.amp(self.phases(length), 2.5))
+        layers.append(dsp.amp(self.phases(length), 2.5))
         layers.append(dsp.amp(self.phases(length), 2.0))
 
-        layers.append(dsp.env(dsp.amp(self.trains(length), 0.5), 'random'))
-        layers.append(dsp.env(dsp.amp(self.trains(length), 0.5), 'random'))
-        layers.append(dsp.env(dsp.amp(self.trains(length), 0.5), 'random'))
+        layers.append(dsp.env(self.trains(length), 'vary'))
+        layers.append(dsp.env(self.trains(length), 'vary'))
+        layers.append(dsp.env(self.trains(length), 'vary'))
 
-        out += dsp.mix(layers, 2.0) 
+        out += dsp.mix(layers, 2.3) 
         
         return out
 
     def trains(self, length, out=''):
-        wtypes = ['sine2pi', 'saw', 'cos2pi']
+        print 'trains!', dsp.fts(length)
+        wtypes = ['sine2pi', 'vary', 'saw', 'cos2pi', 'impulse', 'vary']
         trainlens = self.timings(length)
         for t in trainlens:
-            if dsp.randint(0, 1) == 1:
-                wtype = wtypes[dsp.randint(0, len(wtypes)-1)]
-                out = dsp.split(self.train(t, wtype), trainlens[dsp.randint(0, len(trainlens)-1)] / dsp.randint(2, 16))
-                out = ''.join(dsp.randshuffle(out))
-            else:
-                out += self.train(t)
+            wtype = wtypes[dsp.randint(0, len(wtypes)-1)]
+            trains = dsp.split(self.train(t, wtype), trainlens[dsp.randint(0, len(trainlens)-1)] / dsp.randint(2, 16))
+            trains = [dsp.env(dsp.pulsar(train), 'vary') for train in trains]
+            trains = ''.join(dsp.randshuffle(trains))
+
+            if dsp.randint(0, 4) < 4:
+                trains = dsp.alias(trains, 0, 'vary', dsp.randint(8, 12))
+
+            out += trains
 
         return out
 
     def phases(self, length, out=''):
-        wtypes = ['sine2pi', 'saw', 'cos2pi']
+        print 'phases!', dsp.fts(length)
+        wtypes = ['vary', 'sine2pi', 'saw', 'vary', 'cos2pi', 'impulse', 'vary']
 
         layers = []
         
-        pulselens = self.timings(length / dsp.randint(40, 120))
+        pulselens = self.timings(length / dsp.randint(10, 120))
         pulselen = pulselens[dsp.randint(0, len(pulselens)-1)]
         pulselenphase = pulselen * (self.scale[dsp.randint(0, len(self.scale)-1)] * 0.001) + pulselen
 
@@ -144,13 +159,14 @@ class Score:
             layers[i] = [dsp.env(l, 'phasor') for l in layers[i]]
             layers[i] = ''.join(dsp.randshuffle(layers[i]))
 
-        out += dsp.env(dsp.mix(layers), 'random')
+        out += dsp.env(dsp.mix(layers), 'vary')
 
         return out
 
 
     def pulses(self, length, out=''):
-        wtypes = ['sine2pi', 'saw', 'cos2pi']
+        print 'pulses!', dsp.fts(length)
+        wtypes = ['sine2pi', 'saw', 'cos2pi', 'impulse']
         layers = []
         wtype = wtypes[dsp.randint(0, len(wtypes)-1)]
         trains = [self.train(length, wtype) for i in range(dsp.randint(2, 4))]
@@ -164,11 +180,11 @@ class Score:
             for l in trainlens:
                 start = dsp.randint(0, dsp.flen(t) - l)
                 pulse = dsp.cut(t, start, l)
-                pulse = dsp.env(pulse, 'random')
+                pulse = dsp.env(pulse, 'vary')
                 pulse = dsp.cut(pulse, 0, dsp.flen(pulse) / 2)
                 pulse = dsp.pad(pulse, 0, dsp.flen(pulse))
-                freq = (0.999, 1.001, 'random')
-                amp = (0.5, 0.9, 'random')
+                freq = (0.999, 1.001, 'vary')
+                amp = (0.5, 0.9, 'vary')
                 pulse = dsp.pulsar(pulse, freq, amp, dsp.rand())
                 pulses.append(pulse)
             layers.append(''.join(pulses))
@@ -178,6 +194,7 @@ class Score:
         return out
 
     def train(self, length, wtype='impulse', out=''):
+        print '    train!', dsp.fts(length), wtype
         layers = [ dsp.pulsar(dsp.tone( length
                             ,self.pitches[dsp.randint(0, len(self.pitches)-1)]
                             ,wtype
@@ -189,6 +206,7 @@ class Score:
         return out
 
     def sines(self, length, out=''):
+        print 'sines!', dsp.fts(length)
         layers = [ dsp.pulsar(dsp.tone( length 
                             ,self.pitches[dsp.randint(0,len(self.pitches)-1)] * dsp.randchoose([1,2,4,8])
                             ,'sine2pi' 
