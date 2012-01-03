@@ -18,15 +18,21 @@ def main(out=''):
     score = Score()
 
     timings = score.timings(dsp.stf(200))
-    timings.extend(score.timings(dsp.stf(300)))
     timings.extend(score.timings(dsp.stf(200)))
+    timings.extend(score.timings(dsp.stf(200)))
+
+    print
+    print [dsp.fts(tt) for tt in timings]
+    print
+
+    out += dsp.env(score.sines(dsp.stf(2)), 'vary')
 
     for t in timings:
         out += score.section(t)
 
-    #out += score.section(timings[0])
-
     out = dsp.write(out, s, True)
+
+    out += dsp.env(score.sines(dsp.stf(2)), 'vary')
 
     # Show render time
     dsp.timer('stop')
@@ -39,6 +45,7 @@ class Score:
     tonic = 440.0
 
     scale = [
+        1.0,
         2.222,
         2.5,
         3.0,
@@ -94,6 +101,9 @@ class Score:
     def section(self, length, out=''):
         layers = []
 
+        if dsp.randint(0, 3) > 1:
+            out += dsp.env(self.sines(dsp.mstf(dsp.randint(200, 4000))), 'vary')
+
         layers.append(dsp.amp(self.sines(length), 0.7))
         layers.append(dsp.amp(self.sines(length), 0.7))
         layers.append(dsp.env(dsp.amp(self.sines(length), 1.1), 'vary'))
@@ -113,6 +123,9 @@ class Score:
         layers.append(dsp.env(self.trains(length), 'vary'))
 
         out += dsp.mix(layers, 2.3) 
+
+        if dsp.randint(0, 3) > 1:
+            out += self.pulses(dsp.mstf(dsp.randint(200, 4000)))
         
         return out
 
@@ -136,28 +149,27 @@ class Score:
     def phases(self, length, out=''):
         print 'phases!', dsp.fts(length)
         wtypes = ['vary', 'sine2pi', 'saw', 'vary', 'cos2pi', 'impulse', 'vary']
-
-        layers = []
         
         pulselens = self.timings(length / dsp.randint(10, 120))
         pulselen = pulselens[dsp.randint(0, len(pulselens)-1)]
-        pulselenphase = pulselen * (self.scale[dsp.randint(0, len(self.scale)-1)] * 0.001) + pulselen
 
-        for l in range(2):
+        layers = []
+        for l in range(dsp.randint(2, 4)):
             wtype = wtypes[dsp.randint(0, len(wtypes)-1)]
             layers.append(dsp.pulsar(self.train(length, wtype)))
 
-        for i in range(2): 
-            if i == 0:
-                splitlen = pulselen
-            elif i == 1:
-                splitlen = pulselenphase
+        phases = []
+        for i in range(dsp.randint(2, 4)): 
+            il = dsp.randint(0, len(layers)-1)
+            phase = dsp.split(layers[il], pulselen) 
+            phase = [dsp.env(p, 'phasor') for p in phase]
+            ppad = [int(iw) for iw in dsp.wavetable('random', len(phase), 0.0, dsp.rand(44.0, 44100.0))]
+            phase = [dsp.pad(p, 0, ppad[ip]) for ip,p in enumerate(phase)]
+            phase = ''.join(dsp.randshuffle(phase))
+            phase = dsp.fill(phase, length)
+            phases.append(dsp.env(phase, 'vary'))
 
-            layers[i] = dsp.split(layers[i], splitlen) 
-            layers[i] = [dsp.env(l, 'phasor') for l in layers[i]]
-            layers[i] = ''.join(dsp.randshuffle(layers[i]))
-
-        out += dsp.env(dsp.mix(layers), 'vary')
+        out += dsp.mix(phases)
 
         return out
 
@@ -185,7 +197,9 @@ class Score:
                 amp = (0.5, 0.9, 'vary')
                 pulse = dsp.pulsar(pulse, freq, amp, dsp.rand())
                 pulses.append(pulse)
-            layers.append(''.join(pulses))
+            pulses = ''.join(pulses)
+            pulses = dsp.fill(pulses, length)
+            layers.append(pulses)
 
         out = dsp.mix(layers)
 
