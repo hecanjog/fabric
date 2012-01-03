@@ -39,10 +39,9 @@ class Score:
     tonic = 440.0
 
     scale = [
-        1.0,
-        math.sqrt(2),
-        2.0,
-        math.sqrt(8),
+        2.222,
+        2.5,
+        3.0,
         4.0,
       ]
 
@@ -195,7 +194,7 @@ class Score:
     def train(self, length, wtype='impulse', out=''):
         print '    train!', dsp.fts(length), wtype
         layers = [ dsp.pulsar(dsp.tone( length
-                            ,self.pitches[dsp.randint(0, len(self.pitches)-1)]
+                            ,self.pitches[dsp.randint(0, len(self.pitches)-1)] * dsp.randchoose([1,2,4,8,16,32])
                             ,wtype
                             ,dsp.rand(0.01, 0.2) ))
                     for i in range(dsp.randint(3,6)) ]
@@ -207,7 +206,7 @@ class Score:
     def sines(self, length, out=''):
         print 'sines!', dsp.fts(length)
         layers = [ dsp.pulsar(dsp.tone( length 
-                            ,self.pitches[dsp.randint(0,len(self.pitches)-1)] * dsp.randchoose([1,2,4,8])
+                            ,self.pitches[dsp.randint(0,len(self.pitches)-1)] * dsp.randchoose([1,2,4,8,16,32])
                             ,'sine2pi' 
                             ,dsp.rand(0.01, 0.2) )) 
                    for i in range(dsp.randint(3,6)) ]
