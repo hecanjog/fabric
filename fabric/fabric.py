@@ -1,13 +1,18 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
 
-"""
-    Ding dong
-    Erik Schoster
-    www.hecanjog.com
+""" Ding dong :: www.hecanjog.com
 """
 
-import os, sys, wave, audioop, math, random, string, shutil, struct
+import wave
+import audioop
+import math
+import random
+import struct
+import string
+import time
+import hashlib
+
 from datetime import datetime
 
 audio_params = (2, 2, 44100, 0, "NONE", "not_compressed") 
@@ -15,6 +20,10 @@ snddir = ''
 dsp_grain = 64
 env_min = 2 
 cycle_count = 0
+thetime = 0
+seedint = 0
+seedstep = 0
+seedhash = ''
 
 def lget(list, index, default=True):
     try:
@@ -32,7 +41,7 @@ def interleave(list_one, list_two):
     elif len(list_two) > len(list_one):
         big_list = len(list_two)
     else:
-        if random.randint(0, 1) == 0:
+        if randint(0, 1) == 0:
             big_list = len(list_one)
         else:
             big_list = len(list_two)
@@ -58,8 +67,7 @@ def packet_shuffle(list, packet_size):
         lists = list_split(list, packet_size)
         shuffled_lists = []
         for sublist in lists:
-            random.shuffle(sublist)
-            shuffled_lists.append(sublist)
+            shuffled_lists.append(randshuffle(sublist))
 
         big_list = []
         for shuffled_list in shuffled_lists:
@@ -91,6 +99,19 @@ def list_split(list, packet_size):
 def ratio(numerator, denominator):
     return float(numerator) / float(denominator)
 
+def timer(cmd='start'):
+    global thetime
+    if cmd == 'start':
+        thetime = time.time()
+        print 'Started render at timestamp', thetime
+        return thetime 
+    elif cmd == 'stop':
+        thetime = time.time() - thetime
+        themin = int(thetime) / 60
+        thesec = thetime - (themin * 60)
+        print 'Render time:', themin, 'min', thesec, 'sec'
+        return thetime
+
 def transpose(audio_string, amount):
     amount = 1.0 / amount
 
@@ -101,22 +122,23 @@ def transpose(audio_string, amount):
 def byte_string(number):
     return struct.pack("<h", number)
 
-def tone(length=44100, freq=440, wavetype='sine2pi', amp=1.0):
+def tone(length=44100, freq=440, wavetype='sine2pi', amp=1.0, blocksize=0):
     cyclelen = htf(freq * 0.99)
-
-    blocksize = 64 * 2 
     numcycles = length / cyclelen
-    numblocks = numcycles / blocksize
 
-    if numcycles % blocksize > 0:
-        numblocks += 1
+    if blocksize > 0:
+        numblocks = numcycles / blocksize
+        if numcycles % blocksize > 0:
+            numblocks += 1
 
-    cycles = ''.join([blocksize * cycle(freq * scale(0.99, 1.0, 0, numcycles - 1, i), wavetype, amp) for i in range(numblocks)])
+        cycles = ''.join([blocksize * cycle(freq * rand(0.99, 1.0), wavetype, amp) for i in range(numblocks)])
+    else:
+        cycles = numcycles * cycle(freq * rand(0.99, 1.0), wavetype, amp)
 
-    if(flen(cycles) < length):
-        print 'too short!', fts(length - flen(cycles))
-    print 'generated a tone', fts(flen(cycles)), 'seconds long'
-    print
+    #if(flen(cycles) < length):
+        #print 'too short!', fts(length - flen(cycles))
+    #print 'generated a tone', fts(flen(cycles)), 'seconds long'
+    #print
 
     return cycles 
 
@@ -135,84 +157,147 @@ def cap(num, max, min=0):
         num = max
     return num
 
-def seedrand():
-    if len(rseed) == 0:
-        rseed = cycle(440)
+def seed(theseed=False):
+    global seedint
+    global seedhash
 
-    sseed = bin2ascii.b2a_qp(rseed, False, False)
-    sseed = list(sseed)
-    lseed = []
+    if theseed == False:
+        theseed = cycle(440)
 
-    for i, s in enumerate(sseed):
-        lseed.append(ord(s) * ord(sseed[len(sseed) - i]))
+    h = hashlib.sha1(theseed)
+    seedhash = h.digest()
 
-    print lsseed
+    seedint = int(''.join([str(ord(c)) for c in list(seedhash)]))
+    return seedint
 
-def randint():
-    pass
+def stepseed():
+    global seedint
+    global seedstep
 
-def rand():
-    pass
+    h = hashlib.sha1(str(seedint))
+    seedint = int(''.join([str(ord(c)) for c in list(h.digest())]))
 
-def breakpoint(values, size=512, range_out=(0,1)):
-    if len(values) > 1:
-        steps = size / (len(values) - 1)
-        steps_remainder = size % (len(values) - 1)
+    seedstep = seedstep + 1
+
+    return seedint
+    
+
+def randint(lowbound=0, highbound=1):
+    global seedint
+
+    if seedint > 0:
+        return int(rand() * (highbound - lowbound) + lowbound)
     else:
-        print 'breakpoint fail: one or fewer values'
+        return random.randint(lowbound, highbound)
+
+
+def rand(lowbound=0, highbound=1):
+    global seedint
+    if seedint > 0:
+        return ((stepseed() / 100.0**20) % 1.0) * (highbound - lowbound) + lowbound
+    else:
+        return random.random() * (highbound - lowbound) + lowbound
+
+def randchoose(items):
+    return items[randint(0, len(items)-1)]
+
+def randshuffle(input):
+    items = input[:]
+    shuffled = []
+    for i in range(len(items)):
+        if len(items) > 0:
+            item = randchoose(items)
+            shuffled.append(item)
+            items.remove(item)
+
+    return shuffled 
+
+
+def breakpoint(values, size=512, highval=1.0, lowval=0.0):
+    if len(values) < 2:
+        values = [ 0.0, ['line', 1.0] ] 
+
+    if size < 2:
+        print 'tried to make breakpoint table of size', size
+        print 'values', values, 'highval', highval, 'lowval', lowval
+        return [rand(highval,lowval), rand(highval,lowval)]
+
+    if size < len(values):
+        values = values[:size]
 
     groups = []
 
+    try:
+        if len(values[0]) > 1:
+            chigh = 0.0 # First value cannot set wtype
+    except TypeError:
+        chigh = values[0]
+
+    gsize = size / (len(values)-1) 
+    gsizespill = size % (len(values)-1)
+
     for i, v in enumerate(values):
-        if i == len(values) - 2:
-            steps += steps_remainder
-        
-        if i < len(values) - 1:
-            if steps - 1 > 0:
-                groups.extend([(c / float(steps - 1)) * (values[i+1] - v) + v for c in range(steps)]) 
-            else:
-                print size, steps, i, v, len(values), 'breakpoint fail'
+        if i is not 0:
+            try:
+                if len(v) > 1:
+                    wtype = v[0]
+                    clow = chigh
+                    chigh = v[1]
+
+                if len(v) == 3:
+                    gsize = gsize * v[2]
+            except TypeError:
+                wtype = 'line'
+                clow = chigh
+                chigh = v
+
+            if v == values[-1]:
+                gsize += gsizespill 
+
+            groups.extend(wavetable(wtype, gsize, clow, chigh))
 
     return groups
 
-def wavetable(wtype="sine", size=512):
+def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
     wtable = []
-    wave_types = ["sine", "cos", "line", "phasor", "sine2pi", "cos2pi", "vary"]
+    wave_types = ["sine", "cos", "line", "saw", "impulse", "phasor", "sine2pi", "cos2pi", "vary"]
 
     if wtype == "random":
-        wtype = wave_types[random.randint(0, len(wave_types) - 1)]
+        wtype = wave_types[randint(0, len(wave_types) - 1)]
 
     if wtype == "sine":
-        wtable = [math.sin(i * math.pi) for i in frange(size)]
+        wtable = [math.sin(i * math.pi) for i in frange(size, highval, lowval)]
     elif wtype == "sine2pi":
-        wtable = [math.sin(i * math.pi * 2) for i in frange(size)]
+        wtable = [math.sin(i * math.pi * 2) for i in frange(size, highval, lowval)]
     elif wtype == "cos2pi":
-        wtable = [math.cos(i * math.pi * 2) for i in frange(size)]
+        wtable = [math.cos(i * math.pi * 2) for i in frange(size, highval, lowval)]
     elif wtype == "cos":
-        wtable = [math.cos(i * math.pi) for i in frange(size)]
+        wtable = [math.cos(i * math.pi) for i in frange(size, highval, lowval)]
     elif wtype == "saw":
-        wtable = [(i - 1.0) * 2.0 for i in frange(size)]
+        wtable = [(i - 1.0) * 2.0 for i in frange(size, highval, lowval)]
     elif wtype == "line":
-        wtable = [i for i in frange(size)]
+        wtable = [i for i in frange(size, highval, lowval)]
     elif wtype == "phasor":
-        wtable = wavetable("line", size)
+        wtable = wavetable("line", size, highval, lowval)
         list.reverse(wtable)
+    elif wtype == "impulse":
+        wtable = [float(randint(-1, 1)) for i in range(size / randint(2, 12))]
+        wtable.extend([0.0 for i in range(size - len(wtable))])
     elif wtype == "vary":
-        if size < 10:
-            print 'vary size small:', size
-            wtable = wavetable("random", size)
-        else:
-            wtable = breakpoint([random.random() for i in range(4)], size) 
+        btable = [ [wave_types[randint(0, len(wave_types)-1)], rand(lowval, highval)] for i in range(randint(3, 30)) ]
+        wtable = breakpoint(btable, size, highval, lowval) 
 
     wtable[0] = 0.0
     wtable[-1] = 0.0
     
     return wtable
 
-def frange(steps):
-    if steps < env_min:
-        steps = env_min
-    return [ i / float(steps - 1) for i in range(steps)]
+def frange(steps, highval=1.0, lowval=0.0):
+    if steps < 2:
+        steps = 3 
+
+    return  [ (i / float(steps-1)) * (highval - lowval) + lowval for i in range(steps)]
+        
 
 def env(audio_string, wavetable_type="sine"):
     packets = split(audio_string, dsp_grain)
@@ -229,7 +314,7 @@ def alias(audio_string, passthru = 0, envelope = 'random', split_size = 0):
         envelope = False
 
     if split_size == 0:
-        split_size = dsp_grain / random.randint(1, dsp_grain)
+        split_size = dsp_grain / randint(1, dsp_grain)
 
     packets = split(audio_string, split_size)
     packets = [p*2 for i, p in enumerate(packets) if i % 2]
@@ -307,7 +392,7 @@ def prob(item_dictionary):
         for i in range(weight):
             weighted_list.append(item)
 
-    return random.choice(weighted_list)
+    return randchoose(weighted_list)
 
 def stf(s):
     ms = s * 1000.0
@@ -395,13 +480,13 @@ def pan(audio_string, amps = (1, 1), passthru = False):
     return audio_string
 
 def spread(packets, width = (1, 1), prob = 0.5):
-    packets = [pan(p, (width[0] * random.random(), width[1] * random.random()), probability(prob)) for p in packets]
+    packets = [pan(p, (width[0] * rand(), width[1] * rand()), probability(prob)) for p in packets]
 
     return packets
 
 def probability(prob):
     # returns weighted random boolean 
-    return random.random() > prob
+    return rand() > prob
 
 def insert_into(haystack, needle, position):
     # split string at position index
@@ -446,7 +531,7 @@ def vsplit(input, minsize, maxsize):
     pos = 0
 
     for chunk in range(flen(input) / minsize):
-        chunksize = random.randint(minsize, maxsize)
+        chunksize = randint(minsize, maxsize)
         if pos + chunksize < flen(input) - chunksize:
             output.append(cut(input, pos, chunksize))
             pos += chunksize
@@ -543,9 +628,9 @@ def fnoise(sound, coverage):
     target_frames = int(flen(sound) * coverage)
 
     for i in range(target_frames):
-        p = random.randint(0, flen(sound) - 1)
+        p = randint(0, flen(sound) - 1)
         f = cut(sound, p, 1)
-        sound = replace_into(sound, f, random.randint(0, flen(sound) - 1))
+        sound = replace_into(sound, f, randint(0, flen(sound) - 1))
 
     return sound
 
