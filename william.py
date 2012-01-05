@@ -8,7 +8,7 @@ import math
 import sys
 
 def main(out=''):
-    s = 'williamthegoat'
+    s = 'william_the_goat'
     dsp.seed(s)
     sys.stdout = open('logs/'+s+'-log.txt', 'w')
 
@@ -17,22 +17,22 @@ def main(out=''):
     dsp.snddir = 'sounds/william/'
     score = Score()
 
-    timings = score.timings(dsp.stf(200))
-    timings.extend(score.timings(dsp.stf(200)))
-    timings.extend(score.timings(dsp.stf(200)))
+    timings = score.timings(dsp.stf(dsp.randint(60, 300)))
+    timings.extend(score.timings(dsp.stf(dsp.randint(60,300))))
+    timings.extend(score.timings(dsp.stf(dsp.randint(60,300))))
 
     print
     print [dsp.fts(tt) for tt in timings]
     print
 
-    out += dsp.env(score.sines(dsp.stf(2)), 'vary')
+    out += dsp.env(score.sines(dsp.stf(dsp.randint(2, 8))), 'vary')
 
     for t in timings:
         out += score.section(t)
 
     out = dsp.write(out, s, True)
 
-    out += dsp.env(score.sines(dsp.stf(2)), 'vary')
+    out += dsp.env(score.sines(dsp.stf(dsp.randint(2, 8))), 'vary')
 
     # Show render time
     dsp.timer('stop')
@@ -101,7 +101,7 @@ class Score:
     def section(self, length, out=''):
         layers = []
 
-        if dsp.randint(0, 3) > 1:
+        if dsp.randint(0, 6) > 1:
             out += dsp.env(self.sines(dsp.mstf(dsp.randint(200, 4000))), 'vary')
 
         layers.append(dsp.amp(self.sines(length), 0.7))
@@ -125,7 +125,7 @@ class Score:
         out += dsp.mix(layers, 2.3) 
 
         if dsp.randint(0, 3) > 1:
-            out += self.pulses(dsp.mstf(dsp.randint(200, 4000)))
+            out += dsp.mix([self.pulses(dsp.mstf(dsp.randint(200, 4000))) for i in range(dsp.randint(3, 8))])
         
         return out
 
