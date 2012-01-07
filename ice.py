@@ -5,7 +5,8 @@ import fabric.fabric as dsp
 
 def main(out=''):
     dsp.timer('start') 
-    dsp.snddir = 'sounds/'
+    dsp.snddir = 'sounds/disquiet0001-ice/'
+    dsp.seed('disquiet0001-ice')
 
     score = Score()
 
@@ -18,8 +19,13 @@ def main(out=''):
 class Score:
     """ structure, score """
 
+    def __init__(self):
+        self.ice = dsp.read('ice.wav')
+
     def opening(self, out=''):
-        out += dsp.tone(dsp.stf(10), 440, 'sine2pi', 0.3)
+        freq = (0.2, 2.0, 'vary')
+        amp = (0.0, 1.0, 'vary')
+        out += dsp.mix([ dsp.env(dsp.pulsar(self.ice.data, freq, amp, dsp.rand()), 'vary') for i in range(10) ], 5.0)
         
         return out
 
