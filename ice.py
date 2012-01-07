@@ -27,17 +27,17 @@ class Score:
 
     def resonators(self, sound, out=''):
         pitches = [
-            [220, 440, 660],
-            [110, 220, 440, 550],
-            [55, 220, 440, 660],
+            [440, 660, 440 * 4, 440 * 8],
+            [220, 440, 660, 440 * 4, 440 * 8],
+            [110, 220, 440, 550 * 2],
+            [110, 220, 440, 550, 550 * 2],
+            [55, 220, 440, 880, 440 * 4],
+            [55, 220, 440, 660, 880, 440 * 4],
         ]
 
         pitches = [[dsp.htf(p) for p in pitch] for pitch in pitches]
-        sectionlen = dsp.flen(sound) / len(pitches)
-
-        sounds = dsp.split(sound, sectionlen)
     
-        out += ''.join([self.reson(s, pitches[i]) for i,s in enumerate(sounds)])
+        out += dsp.mix([dsp.pad(self.reson(sound, p), dsp.stf(dsp.rand(0.0, 4.0)), dsp.stf(dsp.rand(0.0, 4.0))) for p in pitches])
 
         return out
 
@@ -62,8 +62,8 @@ class Score:
     def slivers(self, sound, out=''):
 
         # Slivers
-        slivers = [dsp.cut(sound, dsp.randint(0, dsp.flen(self.ice.data) - dsp.mstf(20)), dsp.mstf(dsp.randint(10, 60))) for i in range(7)]
-        slivers = [dsp.pad(dsp.env(s, 'random'), dsp.randint(0, 16) * dsp.mstf(10), dsp.randint(0, 16) * dsp.mstf(10)) * 280 for s in slivers]
+        slivers = [dsp.cut(sound, dsp.randint(0, dsp.flen(self.ice.data) - dsp.mstf(220)), dsp.mstf(dsp.randint(40, 220))) for i in range(20)]
+        slivers = [dsp.pad(dsp.env(s, 'phasor'), dsp.randint(0, 24) * dsp.mstf(10), dsp.randint(0, 24) * dsp.mstf(10)) * 100 for s in slivers]
 
         out += dsp.mix([dsp.panenv(s, 'vary', 'vary') for s in slivers], 5.0)
 
