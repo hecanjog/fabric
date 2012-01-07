@@ -2,26 +2,18 @@
 # -*- coding: UTF-8 -*-
 
 import fabric.fabric as dsp
-import random
-import time
-import audioop 
-import math
 
 def main(out=''):
-    timer = time.time()
-
+    dsp.timer('start') 
     dsp.snddir = 'sounds/'
+
     score = Score()
 
     out += score.opening()
 
     out = dsp.write(out, 'render', True)
 
-    # Show render time
-    timer = time.time() - timer
-    min = int(timer) / 60
-    sec = timer - (min * 60)
-    print 'render time:', min, 'min', sec, 'sec'
+    dsp.timer('stop')
 
 class Score:
     """ structure, score """
