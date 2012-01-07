@@ -284,7 +284,7 @@ def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
         wtable = [float(randint(-1, 1)) for i in range(size / randint(2, 12))]
         wtable.extend([0.0 for i in range(size - len(wtable))])
     elif wtype == "vary":
-        btable = [ [wave_types[randint(0, len(wave_types)-1)], rand(lowval, highval)] for i in range(randint(3, 30)) ]
+        btable = [ [wave_types[randint(0, len(wave_types)-1)], rand(lowval, highval)] for i in range(randint(10, 60)) ]
         wtable = breakpoint(btable, size, highval, lowval) 
     elif wtype == "flat":
         wtable = [highval for i in range(size)]
@@ -571,7 +571,12 @@ def pan(slice, pan_pos=0.5, amp=1.0):
     return audioop.mul(slice, audio_params[1], amp)
 
 def env(audio_string, wavetable_type="sine"):
-    packets = split(audio_string, dsp_grain)
+    # Very short envelopes are possible...
+    if flen(audio_string) < dsp_grain * 4:
+        packets = split(audio_string, 1)
+    else:
+        packets = split(audio_string, dsp_grain)
+
     wtable = wavetable(wavetable_type, len(packets))
     packets = [audioop.mul(packet, audio_params[1], wtable[i]) for i, packet in enumerate(packets)]
 
