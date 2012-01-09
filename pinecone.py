@@ -13,40 +13,16 @@ def main(out=''):
     out += orc.pinecone.data
     out += dsp.pad('', 0, dsp.mstf(500)) # silence
 
-    out += orc.scrub([440, 660, 880], 200)
-    out += dsp.pad('', 0, dsp.mstf(500)) # silence
-
     out += orc.scrub([440, 660, 880], 100)
-    out += dsp.pad('', 0, dsp.mstf(500)) # silence
-
-    out += orc.scrub([440, 660, 880], 90)
-    out += dsp.pad('', 0, dsp.mstf(500)) # silence
-
-    out += orc.scrub([440, 660, 880], 80)
-    out += dsp.pad('', 0, dsp.mstf(500)) # silence
-
-    out += orc.scrub([440, 660, 880], 70)
-    out += dsp.pad('', 0, dsp.mstf(500)) # silence
-
-    out += orc.scrub([440, 660, 880], 60)
     out += dsp.pad('', 0, dsp.mstf(500)) # silence
 
     out += orc.scrub([440, 660, 880], 50)
     out += dsp.pad('', 0, dsp.mstf(500)) # silence
 
-    out += orc.scrub([440, 660, 880], 45)
-    out += dsp.pad('', 0, dsp.mstf(500)) # silence
-
     out += orc.scrub([440, 660, 880], 40)
-    out += dsp.pad('', 0, dsp.mstf(500)) # silence
-
-    out += orc.scrub([440, 660, 880], 35)
     out += dsp.pad('', 0, dsp.mstf(500)) # silence
     
     out += orc.scrub([440, 660, 880], 30)
-    out += dsp.pad('', 0, dsp.mstf(500)) # silence
-
-    out += orc.scrub([440, 660, 880], 25)
     out += dsp.pad('', 0, dsp.mstf(500)) # silence
 
     out += orc.scrub([440, 660, 880], 20)
@@ -56,6 +32,18 @@ def main(out=''):
     out += dsp.pad('', 0, dsp.mstf(500)) # silence
 
     out += orc.scrub([440, 660, 880], 10)
+    out += dsp.pad('', 0, dsp.mstf(500)) # silence
+
+    out += orc.scrub([440, 660, 880], 8)
+    out += dsp.pad('', 0, dsp.mstf(500)) # silence
+
+    out += orc.scrub([440, 660, 880], 4)
+    out += dsp.pad('', 0, dsp.mstf(500)) # silence
+
+    out += orc.scrub([440, 660, 880], 2)
+    out += dsp.pad('', 0, dsp.mstf(500)) # silence
+
+    out += orc.scrub([440, 660, 880], 1)
 
     out = dsp.write(out, 'pinecone', False)
 
