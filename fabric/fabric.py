@@ -218,8 +218,8 @@ def breakpoint(values, size=512, highval=1.0, lowval=0.0):
         values = [ 0.0, ['line', 1.0] ] 
 
     if size < 2:
-        print 'tried to make breakpoint table of size', size
-        print 'values', values, 'highval', highval, 'lowval', lowval
+        log('tried to make breakpoint table of size'+str(size))
+        log('values: '+str(values)+' highval: '+str(highval)+' lowval'+str(lowval))
         return [rand(highval,lowval), rand(highval,lowval)]
 
     if size < len(values):
@@ -260,7 +260,7 @@ def breakpoint(values, size=512, highval=1.0, lowval=0.0):
 
 def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
     wtable = []
-    wave_types = ["sine", "cos", "line", "saw", "impulse", "phasor", "sine2pi", "cos2pi", "vary"]
+    wave_types = ["sine", "cos", "line", "saw", "impulse", "phasor", "sine2pi", "cos2pi", "vary", "flat"]
 
     if wtype == "random":
         wtype = wave_types[randint(0, len(wave_types) - 1)]
@@ -284,8 +284,10 @@ def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
         wtable = [float(randint(-1, 1)) for i in range(size / randint(2, 12))]
         wtable.extend([0.0 for i in range(size - len(wtable))])
     elif wtype == "vary":
-        btable = [ [wave_types[randint(0, len(wave_types)-1)], rand(lowval, highval)] for i in range(randint(3, 30)) ]
+        btable = [ [wave_types[randint(0, len(wave_types)-1)], rand(lowval, highval)] for i in range(randint(10, 60)) ]
         wtable = breakpoint(btable, size, highval, lowval) 
+    elif wtype == "flat":
+        wtable = [highval for i in range(size)]
 
     wtable[0] = 0.0
     wtable[-1] = 0.0
@@ -298,14 +300,6 @@ def frange(steps, highval=1.0, lowval=0.0):
 
     return  [ (i / float(steps-1)) * (highval - lowval) + lowval for i in range(steps)]
         
-
-def env(audio_string, wavetable_type="sine"):
-    packets = split(audio_string, dsp_grain)
-    wtable = wavetable(wavetable_type, len(packets))
-    packets = [audioop.mul(packet, audio_params[1], wtable[i]) for i, packet in enumerate(packets)]
-
-    return ''.join(packets) 
-
 def alias(audio_string, passthru = 0, envelope = 'random', split_size = 0):
     if passthru > 0:
         return audio_string
@@ -467,18 +461,6 @@ def read(filename):
 
     return snd
 
-def pan(audio_string, amps = (1, 1), passthru = False):
-    if passthru:
-        return audio_string
-
-    if audio_params[0] == 1:
-        audio_string = audioop.tostereo(audio_string, audio_params[1], amps[0], amps[1])
-    elif audio_params[0] == 2:
-        audio_string = audioop.tomono(audio_string, audio_params[1], 0.5, 0.5)
-        audio_string = audioop.tostereo(audio_string, audio_params[1], amps[0], amps[1])
-
-    return audio_string
-
 def spread(packets, width = (1, 1), prob = 0.5):
     packets = [pan(p, (width[0] * rand(), width[1] * rand()), probability(prob)) for p in packets]
 
@@ -576,13 +558,44 @@ def pantamp(pan_pos):
 
     return pan_pos
 
+def pan(slice, pan_pos=0.5, amp=1.0):
+    amps = pantamp(pan_pos)
+
+    lslice = audioop.tomono(slice, audio_params[1], 1, 0)
+    lslice = audioop.tostereo(lslice, audio_params[1], amps[0], 0)
+
+    rslice = audioop.tomono(slice, audio_params[1], 0, 1)
+    rslice = audioop.tostereo(rslice, audio_params[1], 0, amps[1])
+
+    slice = audioop.add(lslice, rslice, audio_params[1])
+    return audioop.mul(slice, audio_params[1], amp)
+
+def env(audio_string, wavetable_type="sine"):
+    # Very short envelopes are possible...
+    if flen(audio_string) < dsp_grain * 4:
+        packets = split(audio_string, 1)
+    else:
+        packets = split(audio_string, dsp_grain)
+
+    wtable = wavetable(wavetable_type, len(packets))
+    packets = [audioop.mul(packet, audio_params[1], wtable[i]) for i, packet in enumerate(packets)]
+
+    return ''.join(packets) 
+
+def panenv(sound, ptype='line', etype='sine', panlow=0.0, panhigh=1.0, envlow=0.0, envhigh=1.0):
+    packets = split(sound, dsp_grain)
+
+    ptable = wavetable(ptype, len(packets), panlow, panhigh)
+    etable = wavetable(etype, len(packets), envlow, envhigh)
+
+    packets = [pan(p, ptable[i], etable[i]) for i, p in enumerate(packets)]
+
+    return ''.join(packets)
+
 def rangetowidth(low, high):
     width = high - low
     width += low
     return width
-
-def train(sound, pulses=10, pos=(0.0, 1.0, [0.0, 1.0, 0.0], 'sine'), freq=(0.0, 1.0, [0.0, 1.0, 0.0], 'sine'), amp=(0.0, 1.0, [1.0], 'sine'), pan=(0.0, 1.0, [1.0], 'sine')):
-    pass
 
 def pulsar(sound, freq=(1.0, 1.01, 'random'), amp=(0.0, 1.0, 'random'), pan_pos=0.5):
     slices = split(sound, dsp_grain)
@@ -591,7 +604,7 @@ def pulsar(sound, freq=(1.0, 1.01, 'random'), amp=(0.0, 1.0, 'random'), pan_pos=
     out_params = {
             'amp': (amp[0], amp[1], wavetable(amp[2], len(slices))),
             'freq': (freq[0], freq[1], wavetable(freq[2], len(slices))),
-            'pan_amp': pantamp(pan_pos),
+            'pan_pos': pan_pos,
     }
 
     # Process each dsp_grain length packet with subpulse() - packets returned can be of variable size
@@ -602,15 +615,7 @@ def pulsar(sound, freq=(1.0, 1.01, 'random'), amp=(0.0, 1.0, 'random'), pan_pos=
    
 def pulsaret(slice, params, index):
     amp = ((params['amp'][1] - params['amp'][0]) * params['amp'][2][index]) + params['amp'][0]
-
-    lslice = audioop.tomono(slice, audio_params[1], 1, 0)
-    lslice = audioop.tostereo(lslice, audio_params[1], params['pan_amp'][0], 0)
-
-    rslice = audioop.tomono(slice, audio_params[1], 0, 1)
-    rslice = audioop.tostereo(rslice, audio_params[1], 0, params['pan_amp'][1])
-
-    slice = audioop.add(lslice, rslice, audio_params[1])
-    slice = audioop.mul(slice, audio_params[1], amp)
+    slice = pan(slice, params['pan_pos'], amp)
 
     freq_width = params['freq'][2][index] * (params['freq'][1] - params['freq'][0]) + params['freq'][0]
     target_rate = int(audio_params[2] * (1.0 / float(freq_width)))
@@ -618,9 +623,6 @@ def pulsaret(slice, params, index):
     if target_rate == audio_params[2]:
         return slice
     else:
-        if target_rate < dsp_grain or target_rate > 2147483647:
-            print target_rate
-            
         slice = audioop.ratecv(slice, audio_params[0], audio_params[1], audio_params[2], cap(target_rate, 2147483647, dsp_grain), None)
         return slice[0]
 
