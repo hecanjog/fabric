@@ -218,8 +218,8 @@ def breakpoint(values, size=512, highval=1.0, lowval=0.0):
         values = [ 0.0, ['line', 1.0] ] 
 
     if size < 2:
-        print 'tried to make breakpoint table of size', size
-        #print 'values', values, 'highval', highval, 'lowval', lowval
+        log('tried to make breakpoint table of size'+str(size))
+        log('values: '+str(values)+' highval: '+str(highval)+' lowval'+str(lowval))
         return [rand(highval,lowval), rand(highval,lowval)]
 
     if size < len(values):
