@@ -254,7 +254,7 @@ def breakpoint(values, size=512, highval=1.0, lowval=0.0):
             if v == values[-1]:
                 gsize += gsizespill 
 
-            groups.extend(wavetable(wtype, gsize, clow, chigh))
+            groups.extend(wavetable(wtype, gsize, scale(lowval, highval, 0.0, 1.0, clow), scale(lowval, highval, 0.0, 1.0, chigh)))
 
     return groups
 
@@ -266,16 +266,17 @@ def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
         wtype = wave_types[randint(0, len(wave_types) - 1)]
 
     if wtype == "sine":
-        wtable = [math.sin(i * math.pi) for i in frange(size, highval, lowval)]
+        wtable = [math.sin(i * math.pi) * (highval - lowval) + lowval for i in frange(size, 1.0, 0.0)]
     elif wtype == "sine2pi":
-        wtable = [math.sin(i * math.pi * 2) for i in frange(size, highval, lowval)]
+        wtable = [math.sin(i * math.pi * 2) * (highval - lowval) + lowval for i in frange(size, 1.0, 0.0)]
     elif wtype == "cos2pi":
-        wtable = [math.cos(i * math.pi * 2) for i in frange(size, highval, lowval)]
+        wtable = [math.cos(i * math.pi * 2) * (highval - lowval) + lowval for i in frange(size, 1.0, 0.0)]
     elif wtype == "cos":
-        wtable = [math.cos(i * math.pi) for i in frange(size, highval, lowval)]
-    elif wtype == "saw":
-        wtable = [(i - 1.0) * 2.0 for i in frange(size, highval, lowval)]
-    elif wtype == "line":
+        wtable = [math.cos(i * math.pi) * (highval - lowval) + lowval for i in frange(size, 1.0, 0.0)]
+    elif wtype == "tri":
+        # Inverse triangle wave, because I'm a dummy. It's late, so it goes.
+        wtable = [math.fabs(i) for i in frange(size, highval, lowval - highval)] # Only really a triangle wave when centered on zero 
+    elif wtype == "saw" or wtype == "line":
         wtable = [i for i in frange(size, highval, lowval)]
     elif wtype == "phasor":
         wtable = wavetable("line", size, highval, lowval)
@@ -288,9 +289,6 @@ def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
         wtable = breakpoint(btable, size, highval, lowval) 
     elif wtype == "flat":
         wtable = [highval for i in range(size)]
-
-    wtable[0] = 0.0
-    wtable[-1] = 0.0
     
     return wtable
 
@@ -485,7 +483,8 @@ def cut(string, start, length):
     # start and length are both given in frames (aka samples)za
 
     if start + length > flen(string):
-        print 'No cut for you!'
+        log('No cut for you!')
+        log('in len: '+str(flen(string))+'start: '+str(start)+' length: '+str(length))
 
     length = int(length) * audio_params[1] * audio_params[0]
     start = int(start) * audio_params[1] * audio_params[0]
