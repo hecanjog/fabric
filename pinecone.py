@@ -12,27 +12,29 @@ def main(out=''):
     out += orc.pinecone.data
     out += dsp.pad('', 0, dsp.mstf(500)) # silence
 
-    out += orc.scrub([440, 660, 880], dsp.stf(0.5), 'line')
-    out += orc.scrub([330, 660, 990], dsp.stf(0.5), 'line')
-    out += orc.scrub([440, 500, 700], dsp.stf(0.5), 'line')
-    out += orc.scrub([440, 600, 880], dsp.stf(1), 'line')
+    #out += orc.scrub([440, 660, 880], dsp.stf(0.5), 'line')
+    #out += orc.scrub([330, 660, 990], dsp.stf(0.5), 'line')
+    #out += orc.scrub([440, 500, 700], dsp.stf(0.5), 'line')
+    #out += orc.scrub([440, 600, 880], dsp.stf(1), 'line')
 
-    out += orc.scrub([550, 660, 770], dsp.stf(4), 'tri')
-    out += orc.scrub([550, 660, 770], dsp.stf(3), 'phasor')
+    #out += orc.scrub([550, 660, 770], dsp.stf(4), 'tri')
+    #out += orc.scrub([550, 660, 770], dsp.stf(3), 'phasor')
 
-    out += orc.scrub([440, 660, 880], dsp.stf(2), 'sine')
-    out += orc.scrub([330, 660, 990], dsp.stf(3), 'cos')
-    out += orc.scrub([440, 500, 700], dsp.stf(4), 'cos')
-    out += orc.scrub([440, 600, 880], dsp.stf(5), 'sine')
+    #out += orc.scrub([440, 660, 880], dsp.stf(2), 'sine')
+    #out += orc.scrub([330, 660, 990], dsp.stf(3), 'cos')
+    #out += orc.scrub([440, 500, 700], dsp.stf(4), 'cos')
+    #out += orc.scrub([440, 600, 880], dsp.stf(5), 'sine')
 
-    out += orc.scrub([420, 600, 890], dsp.stf(6), 'cos')
-    out += orc.scrub([400, 600, 900], dsp.stf(9), 'sine')
+    #out += orc.scrub([420, 600, 890], dsp.stf(6), 'cos')
+    #out += orc.scrub([400, 600, 900], dsp.stf(9), 'sine')
 
-    out += orc.scrub([400, 600, 900], dsp.stf(10), 'vary')
+    #out += orc.scrub([400, 600, 900], dsp.stf(10), 'vary')
+
+    out += orc.expand()
 
     out += orc.pinecone.data
 
-    out = dsp.write(out, 'pinecone', False)
+    out = dsp.write(out, 'pinecone', True)
     dsp.timer('stop')
 
 class Orc:
@@ -40,6 +42,14 @@ class Orc:
 
     def __init__(self):
         self.pinecone = dsp.read('pinecone.wav')
+
+    def expand(self, out=''):
+        scrublen = dsp.stf(1)
+        grid = 16 
+
+        out += ''.join([dsp.env(dsp.cut(self.pinecone.data, i * grid, v), 'sine', True) for i,v in enumerate(dsp.wavetable('tri', scrublen / grid, dsp.mstf(10), 3))])
+
+        return out
 
     def scrub(self, pitches, length, wtype, lowpos=0.0, highpos=1.0, out=''):
         layers = []

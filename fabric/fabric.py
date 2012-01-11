@@ -569,9 +569,9 @@ def pan(slice, pan_pos=0.5, amp=1.0):
     slice = audioop.add(lslice, rslice, audio_params[1])
     return audioop.mul(slice, audio_params[1], amp)
 
-def env(audio_string, wavetable_type="sine"):
+def env(audio_string, wavetable_type="sine", fullres=False):
     # Very short envelopes are possible...
-    if flen(audio_string) < dsp_grain * 4:
+    if flen(audio_string) < dsp_grain * 4 or fullres == True:
         packets = split(audio_string, 1)
     else:
         packets = split(audio_string, dsp_grain)
