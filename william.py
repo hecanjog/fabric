@@ -8,10 +8,19 @@ import math
 import sys
 
 def main(out=''):
-    s = 'william_the_goat'
-    dsp.seed(s)
-    sys.stdout = open('logs/'+s+'-log.txt', 'w')
+    s = """recently
+    I awoke and briefly remembered
+    everything I meant to detail
+    about the specifics of dreamspace
 
+    except
+    the tonal suggestion of your quiet bones
+    concentically ripple-sliding in fractalized
+    friction like windchime moans
+    predetermining escapes to overlapping
+    internally fictional colour landscapes"""
+
+    dsp.seed(s)
     dsp.timer('start')
 
     dsp.snddir = 'sounds/william/'
@@ -20,10 +29,6 @@ def main(out=''):
     timings = score.timings(dsp.stf(dsp.randint(60, 300)))
     timings.extend(score.timings(dsp.stf(dsp.randint(60,300))))
     timings.extend(score.timings(dsp.stf(dsp.randint(60,300))))
-
-    print
-    print [dsp.fts(tt) for tt in timings]
-    print
 
     out += dsp.env(score.sines(dsp.stf(dsp.randint(2, 8))), 'vary')
 
@@ -37,7 +42,6 @@ def main(out=''):
     # Show render time
     dsp.timer('stop')
     print dsp.seedstep, 'hashes calculated'
-    sys.stdout.close()
 
 class Score:
     """ structure, score """
