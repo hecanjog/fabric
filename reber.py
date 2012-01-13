@@ -9,10 +9,10 @@ def main(out=''):
 
     orc = Orc()
 
-    out += orc.scrub([100 * i for i in range(1, 40)], dsp.stf(200), 'line')
-    out += orc.scrub([300 * i for i in range(1, 40)], dsp.stf(200), 'phasor')
-    out += orc.scrub([600 * i for i in range(1, 10)], dsp.stf(200), 'line')
-    out += orc.scrub([600 * i for i in range(1, 20)], dsp.stf(200), 'phasor')
+    out += orc.scrub([300 * i for i in range(1, 20)], dsp.stf(20), 'line')
+    out += orc.scrub([300 * i for i in range(1, 20)], dsp.stf(20), 'phasor')
+    out += orc.scrub([400 * i for i in range(1, 10)], dsp.stf(20), 'line')
+    out += orc.scrub([600 * i for i in range(1, 20)], dsp.stf(20), 'phasor')
 
     out += dsp.mix([orc.expand(dsp.stf(3), 16, dsp.htf(9.5 * i), dsp.htf(300.5 * i)) for i in range(1, 10)], False)
 
@@ -40,7 +40,8 @@ class Orc:
                 numcycles += 1
 
             wtable = dsp.wavetable(wtype, numcycles, dsp.flen(self.blur.data) - dsp.htf(pitch), 0.0) 
-            layers.append(''.join([dsp.env(dsp.cut(self.blur.data, int(i), dsp.htf(pitch)), 'sine') for i in wtable]))
+            #layers.append(''.join([dsp.env(dsp.cut(self.blur.data, int(i), dsp.htf(pitch)), 'sine') for i in wtable]))
+            layers.append(''.join([dsp.cut(self.blur.data, int(i), dsp.htf(pitch)) for i in wtable]))
 
         out += dsp.mix(layers)
 
