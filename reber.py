@@ -10,12 +10,10 @@ def main(out=''):
 
     orc = Orc()
 
-    out += orc.scrub([130 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(60), 'sine', ('rand', dsp.mstf(400)))
-
     layers = []
-    layers.append(orc.scrub([130 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(360), 'sine', ('rand', dsp.mstf(1500))))
-    layers.append(orc.scrub([165.6 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(360), 'sine', ('rand', dsp.mstf(1500))))
-    layers.append(orc.scrub([220 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(360), 'sine', ('rand', dsp.mstf(1500))))
+    layers.append(orc.scrub([130 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(420), 'sine', ('rand', dsp.mstf(1500))))
+    layers.append(orc.scrub([165.6 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(420), 'phasor', ('rand', dsp.mstf(1500))))
+    layers.append(orc.scrub([220 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(420), 'sine', ('rand', dsp.mstf(1500))))
 
     out += dsp.mix(layers)
 
