@@ -260,13 +260,35 @@ def breakpoint(values, size=512, highval=1.0, lowval=0.0):
 
 def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
     wtable = []
-    wave_types = ["sine", "cos", "line", "saw", "impulse", "phasor", "sine2pi", "cos2pi", "vary", "flat"]
+    wave_types = ["sine", "gauss", "cos", "line", "saw", "impulse", "phasor", "sine2pi", "cos2pi", "vary", "flat"]
 
     if wtype == "random":
         wtype = wave_types[randint(0, len(wave_types) - 1)]
 
     if wtype == "sine":
         wtable = [math.sin(i * math.pi) * (highval - lowval) + lowval for i in frange(size, 1.0, 0.0)]
+    elif wtype == "gauss":
+        def gauss(x):
+            # From: http://johndcook.com/python_phi.html
+            # Prolly doing it wrong!
+            a1 =  0.254829592
+            a2 = -0.284496736
+            a3 =  1.421413741
+            a4 = -1.453152027
+            a5 =  1.061405429
+            p  =  0.3275911
+
+            sign = 1
+            if x < 0:
+                sign = -1
+            x = abs(x)/math.sqrt(2.0)
+
+            t = 1.0/(1.0 + p * x)
+            y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * math.exp(-x * x)
+
+            return abs(abs(sign * y) - 1.0)
+
+        wtable = [gauss(i) * (highval - lowval) + lowval for i in frange(size, 2.0, -2.0)] 
     elif wtype == "sine2pi":
         wtable = [math.sin(i * math.pi * 2) * (highval - lowval) + lowval for i in frange(size, 1.0, 0.0)]
     elif wtype == "cos2pi":
