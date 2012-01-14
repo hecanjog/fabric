@@ -10,12 +10,12 @@ def main(out=''):
 
     orc = Orc()
 
-    out += orc.scrub([130 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(60), 'sine', ('rand', dsp.mstf(10000)))
+    out += orc.scrub([130 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(60), 'sine', ('rand', dsp.mstf(400)))
 
     layers = []
-    layers.append(orc.scrub([130 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(360), 'phasor', ('rand', dsp.mstf(20000))))
-    layers.append(orc.scrub([165.6 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(360), 'sine', ('rand', dsp.mstf(24500))))
-    layers.append(orc.scrub([220 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(360), 'line', ('rand', dsp.mstf(28500))))
+    layers.append(orc.scrub([130 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(360), 'sine', ('rand', dsp.mstf(1500))))
+    layers.append(orc.scrub([165.6 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(360), 'sine', ('rand', dsp.mstf(1500))))
+    layers.append(orc.scrub([220 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(360), 'sine', ('rand', dsp.mstf(1500))))
 
     out += dsp.mix(layers)
 
@@ -45,7 +45,7 @@ class Orc:
                 numcycles += 1
 
             wtable = dsp.wavetable(wtype, numcycles, fend, fstart)
-            layers.append(''.join([dsp.env(dsp.cut(self.blur.data, int(i), dsp.htf(pitch)), 'gauss') for i in wtable]))
+            layers.append(''.join([dsp.env(dsp.cut(self.blur.data, int(i), dsp.htf(pitch)), 'sine') for i in wtable]))
 
         out += dsp.mix(layers, True, 2.0)
 
