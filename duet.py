@@ -5,26 +5,31 @@ import fabric.fabric as dsp
 
 def main(out=''):
     dsp.timer('start') 
-    dsp.snddir = 'sounds/reber/'
-    dsp.seed('Blur')
+    dsp.snddir = 'sounds/'
+    dsp.seed('disquiet0002-duet')
 
     orc = Orc()
 
+    tonic = 250.0
+
     layers = []
-    layers.append(orc.scrub([130 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(420), 'sine', ('rand', dsp.mstf(1500))))
-    layers.append(orc.scrub([165.6 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(420), 'phasor', ('rand', dsp.mstf(1500))))
-    layers.append(orc.scrub([220 * 2.0 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(420), 'sine', ('rand', dsp.mstf(1500))))
+    layers.append(orc.scrub([tonic * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(260), 'sine', (0.0, dsp.mstf(2500))))
+    layers.append(orc.scrub([tonic * 1.25 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(260), 'phasor', (0.5, dsp.mstf(2500))))
+    layers.append(orc.scrub([tonic * 1.5 * i + dsp.rand(-1.0, 1.0) for i in range(1, 3)], dsp.stf(260), 'sine', (0.1, dsp.mstf(2500))))
 
-    out += dsp.mix(layers)
+    layers.append(orc.scrub([tonic * 2.25 * i + dsp.rand(-1.0, 1.0) for i in range(1, 2)], dsp.stf(160), 'sine', (0.3, dsp.mstf(1500))))
 
-    out = dsp.write(out, 'blur', True)
+    layers = [dsp.env(layer, 'sine') for layer in layers]
+    out += dsp.mix(layers, False)
+
+    out = dsp.write(out, 'duet', True)
     dsp.timer('stop')
 
 class Orc:
     """ Do things, play things """
 
     def __init__(self):
-        self.blur = dsp.read('blur3.wav')
+        self.blur = dsp.read('horn.wav')
 
     def scrub(self, pitches, length, wtype, sel=(0.0, 44100), out=''):
         layers = []
