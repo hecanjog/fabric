@@ -322,8 +322,14 @@ def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
         wtable = [float(randint(-1, 1)) for i in range(size / randint(2, 12))]
         wtable.extend([0.0 for i in range(size - len(wtable))])
     elif wtype == "vary":
-        btable = [ [wave_types[randint(0, len(wave_types)-1)], rand(lowval, highval)] for i in range(randint(10, 60)) ]
-        wtable = breakpoint(btable, size, highval, lowval) 
+        if size < 32:
+            bsize = size
+        else:
+            bsize = size / randint(2, 16)
+
+        btable = [ [wave_types[randint(0, len(wave_types)-1)], rand(lowval, highval)] for i in range(bsize) ]
+        btable[0] = lowval
+        wtable = breakpoint(btable, size) 
     elif wtype == "flat":
         wtable = [highval for i in range(size)]
     
