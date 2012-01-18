@@ -8,28 +8,24 @@ import audioop
 import math
 
 def main(out=''):
-    timer = time.time()
+    """ sending dreams to she downstream """
+    dsp.timer('start')
+    dsp.seed('pocket')
 
     dsp.snddir = 'sounds/'
-    score = Score()
+    orc = Orc()
 
-    # sending dreams to she downstream
+    pings = dsp.mix([orc.pings(dsp.mstf(100), dsp.stf(40), (50 * 2**6, 75 * 2**6)), orc.pings(dsp.mstf(101), dsp.stf(40), (50 * 2**6, 75 * 2**6))])
+    out += dsp.mix([orc.opening(dsp.stf(120)), orc.bells_opening(), dsp.env(pings, 'line')], False)
 
-    pings = dsp.mix([score.pings(dsp.mstf(100), dsp.stf(40), (50 * 2**6, 75 * 2**6)), score.pings(dsp.mstf(101), dsp.stf(40), (50 * 2**6, 75 * 2**6))])
-    out += dsp.mix([score.opening(dsp.stf(120)), score.bells_opening(), dsp.env(pings, 'line')], False)
-
-    out += score.bells_seqA()
+    out += orc.bells_seqA()
 
     out = dsp.write(out, 'render', True)
+    dsp.timer('stop')
 
-    # Show render time
-    timer = time.time() - timer
-    min = int(timer) / 60
-    sec = timer - (min * 60)
-    print 'render time:', min, 'min', sec, 'sec'
 
-class Score:
-    """ structure, score """
+class Orc:
+    """ make sound """
 
     def bells_seqA(self, out=''):
         pings = dsp.mix([
@@ -50,7 +46,6 @@ class Score:
 
         return out
         
-
     def pings(self, grain_size, length, freqs, out=''):
         print 'ping!', grain_size, length, freqs
         tone = dsp.tone(grain_size, freqs[0], 'sine2pi', 0.05)
@@ -135,8 +130,6 @@ class Score:
         bell = dsp.mix([dsp.pulsar(bell, (1.0, 1.008, 'random'), (0.0, 1.0, 'phasor'), random.random()) for i in range(10)], True, 2.0)
 
         return bell
-        
-        
 
       
 if __name__ == '__main__':
