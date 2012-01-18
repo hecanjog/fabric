@@ -213,69 +213,107 @@ def randshuffle(input):
     return shuffled 
 
 
-def breakpoint(values, size=512, highval=1.0, lowval=0.0):
+def breakpoint(values, size=512):
+    """ Takes a list of values, or a pair of wavetable types and values, 
+    and builds an interpolated list of points between each value using 
+    the wavetable type. Default table type is linear. """
+
+    # we need at least a start and end point
     if len(values) < 2:
         values = [ 0.0, ['line', 1.0] ] 
 
-    if size < 2:
-        log('tried to make breakpoint table of size'+str(size))
-        log('values: '+str(values)+' highval: '+str(highval)+' lowval'+str(lowval))
-        return [rand(highval,lowval), rand(highval,lowval)]
+    # Handle some small size cases
+    if size == 0:
+        log('WARNING: breakpoint size 0')
+        log('values: '+str(values))
+        log('')
+        return []
+    elif size < 4 and size > 0:
+        log('WARNING: small breakpoint, size ' + str(size))
+        log('values: '+str(values))
+        log('')
+        return [values[0] for i in range(size)]
 
+    # Need at least one destination value per point computed
     if size < len(values):
         values = values[:size]
 
+    # Each value produces a group of intermediate points
     groups = []
 
-    try:
-        if len(values[0]) > 1:
-            chigh = 0.0 # First value cannot set wtype
-    except TypeError:
-        chigh = values[0]
-
+    # The size of each group of intermediate points is divded evenly into the target 
+    # size, ignoring the first value and accounting for uneven divisions.
     gsize = size / (len(values)-1) 
     gsizespill = size % (len(values)-1)
 
+    # Pretend the first loop shifts the last endval to the startval
+    endval = values[0]
+    values.pop(0)
+
+    # To build the list of points, loop through each value
     for i, v in enumerate(values):
-        if i is not 0:
-            try:
-                if len(v) > 1:
-                    wtype = v[0]
-                    clow = chigh
-                    chigh = v[1]
+        try:
+            if len(v) > 1:
+                wtype = v[0]
+                startval = endval 
+                endval = v[1]
 
-                if len(v) == 3:
-                    gsize = gsize * v[2]
-            except TypeError:
-                wtype = 'line'
-                clow = chigh
-                chigh = v
+            if len(v) == 3:
+                gsize = gsize * v[2]
+        except TypeError:
+            wtype = 'line'
+            startval = endval
+            endval = v
 
-            if v == values[-1]:
-                gsize += gsizespill 
+        # Pad last group with leftover points
+        if v == values[-1]:
+            gsize += gsizespill 
 
-            groups.extend(wavetable(wtype, gsize, clow, chigh))
+        groups.extend(wavetable(wtype, gsize, endval, startval))
 
     return groups
 
 def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
     wtable = []
-    wave_types = ["sine", "cos", "line", "saw", "impulse", "phasor", "sine2pi", "cos2pi", "vary", "flat"]
+    wave_types = ["sine", "gauss", "cos", "line", "saw", "impulse", "phasor", "sine2pi", "cos2pi", "vary", "flat"]
 
     if wtype == "random":
         wtype = wave_types[randint(0, len(wave_types) - 1)]
 
     if wtype == "sine":
-        wtable = [math.sin(i * math.pi) for i in frange(size, highval, lowval)]
+        wtable = [math.sin(i * math.pi) * (highval - lowval) + lowval for i in frange(size, 1.0, 0.0)]
+    elif wtype == "gauss":
+        def gauss(x):
+            # From: http://johndcook.com/python_phi.html
+            # Prolly doing it wrong!
+            a1 =  0.254829592
+            a2 = -0.284496736
+            a3 =  1.421413741
+            a4 = -1.453152027
+            a5 =  1.061405429
+            p  =  0.3275911
+
+            sign = 1
+            if x < 0:
+                sign = -1
+            x = abs(x)/math.sqrt(2.0)
+
+            t = 1.0/(1.0 + p * x)
+            y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * math.exp(-x * x)
+
+            return abs(abs(sign * y) - 1.0)
+
+        wtable = [gauss(i) * (highval - lowval) + lowval for i in frange(size, 2.0, -2.0)] 
     elif wtype == "sine2pi":
-        wtable = [math.sin(i * math.pi * 2) for i in frange(size, highval, lowval)]
+        wtable = [math.sin(i * math.pi * 2) * (highval - lowval) + lowval for i in frange(size, 1.0, 0.0)]
     elif wtype == "cos2pi":
-        wtable = [math.cos(i * math.pi * 2) for i in frange(size, highval, lowval)]
+        wtable = [math.cos(i * math.pi * 2) * (highval - lowval) + lowval for i in frange(size, 1.0, 0.0)]
     elif wtype == "cos":
-        wtable = [math.cos(i * math.pi) for i in frange(size, highval, lowval)]
-    elif wtype == "saw":
-        wtable = [(i - 1.0) * 2.0 for i in frange(size, highval, lowval)]
-    elif wtype == "line":
+        wtable = [math.cos(i * math.pi) * (highval - lowval) + lowval for i in frange(size, 1.0, 0.0)]
+    elif wtype == "tri":
+        # Inverse triangle wave, because I'm a dummy. It's late, so it goes.
+        wtable = [math.fabs(i) for i in frange(size, highval, lowval - highval)] # Only really a triangle wave when centered on zero 
+    elif wtype == "saw" or wtype == "line":
         wtable = [i for i in frange(size, highval, lowval)]
     elif wtype == "phasor":
         wtable = wavetable("line", size, highval, lowval)
@@ -288,15 +326,12 @@ def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
         wtable = breakpoint(btable, size, highval, lowval) 
     elif wtype == "flat":
         wtable = [highval for i in range(size)]
-
-    wtable[0] = 0.0
-    wtable[-1] = 0.0
     
     return wtable
 
 def frange(steps, highval=1.0, lowval=0.0):
-    if steps < 2:
-        steps = 3 
+    if steps == 1:
+        return [lowval]
 
     return  [ (i / float(steps-1)) * (highval - lowval) + lowval for i in range(steps)]
         
@@ -485,7 +520,8 @@ def cut(string, start, length):
     # start and length are both given in frames (aka samples)za
 
     if start + length > flen(string):
-        print 'No cut for you!'
+        log('No cut for you!')
+        log('in len: '+str(flen(string))+'start: '+str(start)+' length: '+str(length))
 
     length = int(length) * audio_params[1] * audio_params[0]
     start = int(start) * audio_params[1] * audio_params[0]
@@ -570,9 +606,9 @@ def pan(slice, pan_pos=0.5, amp=1.0):
     slice = audioop.add(lslice, rslice, audio_params[1])
     return audioop.mul(slice, audio_params[1], amp)
 
-def env(audio_string, wavetable_type="sine"):
+def env(audio_string, wavetable_type="sine", fullres=False):
     # Very short envelopes are possible...
-    if flen(audio_string) < dsp_grain * 4:
+    if flen(audio_string) < dsp_grain * 4 or fullres == True:
         packets = split(audio_string, 1)
     else:
         packets = split(audio_string, dsp_grain)
