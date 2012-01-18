@@ -213,48 +213,63 @@ def randshuffle(input):
     return shuffled 
 
 
-def breakpoint(values, size=512, highval=1.0, lowval=0.0):
+def breakpoint(values, size=512):
+    """ Takes a list of values, or a pair of wavetable types and values, 
+    and builds an interpolated list of points between each value using 
+    the wavetable type. Default table type is linear. """
+
+    # we need at least a start and end point
     if len(values) < 2:
         values = [ 0.0, ['line', 1.0] ] 
 
-    if size < 2:
-        log('tried to make breakpoint table of size'+str(size))
-        log('values: '+str(values)+' highval: '+str(highval)+' lowval'+str(lowval))
-        return [rand(highval,lowval), rand(highval,lowval)]
+    # Handle some small size cases
+    if size == 0:
+        log('WARNING: breakpoint size 0')
+        log('values: '+str(values))
+        log('')
+        return []
+    elif size < 4 and size > 0:
+        log('WARNING: small breakpoint, size ' + str(size))
+        log('values: '+str(values))
+        log('')
+        return [values[0] for i in range(size)]
 
+    # Need at least one destination value per point computed
     if size < len(values):
         values = values[:size]
 
+    # Each value produces a group of intermediate points
     groups = []
 
-    try:
-        if len(values[0]) > 1:
-            chigh = 0.0 # First value cannot set wtype
-    except TypeError:
-        chigh = values[0]
-
+    # The size of each group of intermediate points is divded evenly into the target 
+    # size, ignoring the first value and accounting for uneven divisions.
     gsize = size / (len(values)-1) 
     gsizespill = size % (len(values)-1)
 
+    # Pretend the first loop shifts the last endval to the startval
+    endval = values[0]
+    values.pop(0)
+
+    # To build the list of points, loop through each value
     for i, v in enumerate(values):
-        if i is not 0:
-            try:
-                if len(v) > 1:
-                    wtype = v[0]
-                    clow = chigh
-                    chigh = v[1]
+        try:
+            if len(v) > 1:
+                wtype = v[0]
+                startval = endval 
+                endval = v[1]
 
-                if len(v) == 3:
-                    gsize = gsize * v[2]
-            except TypeError:
-                wtype = 'line'
-                clow = chigh
-                chigh = v
+            if len(v) == 3:
+                gsize = gsize * v[2]
+        except TypeError:
+            wtype = 'line'
+            startval = endval
+            endval = v
 
-            if v == values[-1]:
-                gsize += gsizespill 
+        # Pad last group with leftover points
+        if v == values[-1]:
+            gsize += gsizespill 
 
-            groups.extend(wavetable(wtype, gsize, scale(lowval, highval, 0.0, 1.0, clow), scale(lowval, highval, 0.0, 1.0, chigh)))
+        groups.extend(wavetable(wtype, gsize, endval, startval))
 
     return groups
 
@@ -315,8 +330,8 @@ def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
     return wtable
 
 def frange(steps, highval=1.0, lowval=0.0):
-    if steps < 2:
-        steps = 3 
+    if steps == 1:
+        return [lowval]
 
     return  [ (i / float(steps-1)) * (highval - lowval) + lowval for i in range(steps)]
         
