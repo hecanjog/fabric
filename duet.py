@@ -11,8 +11,15 @@ def main(out=''):
     orc = Orc()
 
     tonic = 250.0
-    llen = dsp.stf(420)
+    llen = dsp.stf(1800)
     layers = []
+
+    # Opening high tones
+    hi = orc.scrub([tonic * 12, tonic * 24, tonic * 6], int(llen * 0.25), 'vary', (0.0, dsp.mstf(100)))
+    hi = dsp.split(hi, int(llen * 0.0125))
+    hi = [dsp.env(h, 'vary') for h in hi]
+    hi = [dsp.env(h, 'sine') for h in hi]
+    layers.append(dsp.pad(dsp.mix([''.join(hi), orc.scrub([tonic * 6, tonic * 3], int(llen * 0.25), 'sine', (0.0, dsp.mstf(2000)), 'random')]), 0, int(llen * 0.74)))
 
     # Opening tones P1, P8, P12
     layers.append(orc.scrub([tonic + dsp.rand(-1.0, 1.0)], int(llen * 1.0), 'sine', (0.3, dsp.mstf(1000))))
@@ -36,7 +43,7 @@ def main(out=''):
     layers = [dsp.env(layer, 'sine') for layer in layers]
 
     thesun = orc.scrub([tonic * 50, tonic, tonic * 49, tonic * 48, tonic * 24 ], dsp.stf(10), 'sine', (0.32, dsp.mstf(3000)), 'random')
-    suns = dsp.mix([orc.burstsun(thesun, int(llen * 1.0)) for i in range(6)])
+    suns = dsp.mix([orc.burstsun(dsp.amp(thesun, 0.9), int(llen * 1.0)) for i in range(6)])
 
     out += dsp.mix([dsp.mix(layers, False, 4.0), dsp.env(suns, 'sine')], False)
 
