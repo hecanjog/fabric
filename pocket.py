@@ -11,10 +11,27 @@ def main(out=''):
     dsp.snddir = 'sounds/'
     orc = Orc()
 
-    pings = dsp.mix([orc.pings(dsp.mstf(100), dsp.stf(40), (50 * 2**6, 75 * 2**6)), orc.pings(dsp.mstf(101), dsp.stf(40), (50 * 2**6, 75 * 2**6))])
-    out += dsp.mix([orc.opening(dsp.stf(120)), orc.bells_opening(), dsp.env(pings, 'line')], False)
+    layers = []
+    layers.append(orc.pings(dsp.mstf(100), dsp.stf(40), (50 * 2**6, 75 * 2**6)))
+    layers.append(orc.pings(dsp.mstf(101), dsp.stf(40), (50 * 2**6, 75 * 2**6)))
+    layers = [dsp.env(dsp.mix(layers), 'line')] # Mix and envelope pings down to layer 0 
+    layers.append(orc.opening(dsp.stf(120)))
+    layers.append(orc.bells_opening())
+    out += dsp.mix(layers, False)
 
-    out += orc.bells_seqA()
+    layers = []
+    layers.append(orc.phasesaw(dsp.stf(60), 32.7, 0.15, 1.03))
+    layers.append(orc.bells_opening())
+    layers.append(orc.pings(dsp.mstf(100), dsp.stf(60), (50 * 2**6, 80 * 2**6)))
+    layers.append(orc.pings(dsp.mstf(101), dsp.stf(60), (50 * 2**6, 80 * 2**6)))
+    out += dsp.mix(layers)
+
+    layers = []
+    layers.append(orc.phasesaw(dsp.stf(60), 65.4 * 0.5, 0.1, 1.01))
+    layers.append(orc.bells_opening())
+    layers.append(orc.pings(dsp.mstf(100), dsp.stf(60), (50 * 2**6, 80 * 2**6)))
+    layers.append(orc.pings(dsp.mstf(101), dsp.stf(60), (50 * 2**6, 80 * 2**6)))
+    out += dsp.mix(layers)
 
     out = dsp.write(out, 'pocket', True)
     dsp.timer('stop')
@@ -23,25 +40,18 @@ def main(out=''):
 class Orc:
     """ make sound """
 
-    def bells_seqA(self, out=''):
-        pings = dsp.mix([
-            self.pings(dsp.mstf(100), dsp.stf(40), (50 * 2**6, 80 * 2**6)), 
-            self.pings(dsp.mstf(101), dsp.stf(40), (50 * 2**6, 80 * 2**6))])
+    def phasesaw(self, length, tonic, drift_width, drift_speed, harmony=150.0, out=''):
+        layers = []
+        layers.append(self.swells(length, harmony * 1.5))
+        layers.append(self.swells(length, (harmony / 6 + harmony) * 1.5))
+        layers = [dsp.env(dsp.mix(layers), 'line')] # Mix and enveloping swells down to layer 0
 
-        phraseA = dsp.mix([
-            self.bells_opening(), 
-            dsp.env(dsp.mix([self.swells_opening(dsp.stf(60), 150 * 1.5), self.swells_opening(dsp.stf(60), 175 * 1.5)]), 'line'), 
-            dsp.fill(pings, dsp.stf(26.5))], False)
-        out += dsp.mix([phraseA, dsp.mix([self.swells_opening(dsp.stf(30), 32.7 * i, 'saw', 0.15, 1.03) for i in range(4)])])
+        layers.extend([self.swells(length, tonic * i, 'saw', drift_width, drift_speed) for i in range(4)])
 
-        phraseB = dsp.mix([
-            self.bells_opening(), 
-            dsp.env(dsp.mix([self.swells_opening(dsp.stf(60), 150 * 1.5), self.swells_opening(dsp.stf(60), 175 * 1.5)]), 'phasor'), 
-            dsp.fill(pings, dsp.stf(26.5))], True)
-        out += dsp.mix([phraseB, dsp.mix([self.swells_opening(dsp.stf(30), 0.5 * 65.4 * i, 'saw', 0.1, 1.01) for i in range(6)])])
+        out += dsp.mix(layers)
 
         return out
-        
+
     def pings(self, grain_size, length, freqs, out=''):
         print 'ping!', grain_size, length, freqs
         tone = dsp.tone(grain_size, freqs[0], 'sine2pi', 0.05)
@@ -63,8 +73,9 @@ class Orc:
         
         return out
 
-    def swells_opening(self, length, pitch, env='sine2pi', amp=0.15, fmod=1.05, out=''):
+    def swells(self, length, pitch, env='sine2pi', amp=0.15, fmod=1.05, out=''):
         out += dsp.mix([dsp.pulsar(dsp.tone(length, pitch, env, amp), (1.0, fmod, 'random'), (0.6, 1.0, 'vary'), dsp.rand()) for i in range(3)])
+        out = dsp.fill(out, length)
         return out
 
     def bells_opening(self, out=''):

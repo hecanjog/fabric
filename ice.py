@@ -17,8 +17,8 @@ def main(out=''):
     pitchgroups = [
         [dsp.stf(100), 218.02, 327.03, 490.55], # A E B
         [dsp.stf(80), 196.22, 294.33, 490.55], # G D B
-        [dsp.stf(90), 174.42, 294.33, 436.04], # F D A
-        [dsp.stf(120), 145.35, 294.33, 294.33 * 2], # D D D 
+        [dsp.stf(90), 54.505, 174.42, 294.33, 436.04], # A F D A
+        [dsp.stf(120), 72.675, 145.35, 327.03, 294.33, 588.66], # D D E D D 
     ]
 
     layers = []
@@ -37,10 +37,10 @@ def main(out=''):
         layers.append(layer)
 
     icelayers = [dsp.env(l, 'vary') for l in layers]
-    icelayers = [dsp.amp(dsp.env(l, 'sine'), 0.3) for l in icelayers]
+    icelayers = [dsp.amp(dsp.env(l, 'sine'), 0.5) for l in icelayers]
     layers = [dsp.env(l, 'sine') for l in layers]
     layers.extend(icelayers)
-    out += dsp.mix(layers, 6.0)
+    out += dsp.mix(layers, True, 6.0)
 
     out = dsp.write(out, 'olive-oil-gets-nowhere')
 
