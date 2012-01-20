@@ -3,7 +3,7 @@
 
 import fabric.fabric as dsp
 
-""" Olive oil gets everywhere!
+""" Olive oil gets nowhere!
     www.hecanjog.com (CC) BY-NC-SA 
 """
 
@@ -14,14 +14,33 @@ def main(out=''):
 
     orc = Orc()
 
-    pitches = [
-        [218.02, 327.03, 490.55], # A E B
-        [196.22, 294.33, 490.55], # G D B
-        [174.42, 294.33, 436.04], # F D A
-        [145.35, 294.33, 294.33 * 2], # D D D 
+    pitchgroups = [
+        [dsp.stf(100), 218.02, 327.03, 490.55], # A E B
+        [dsp.stf(80), 196.22, 294.33, 490.55], # G D B
+        [dsp.stf(90), 174.42, 294.33, 436.04], # F D A
+        [dsp.stf(120), 145.35, 294.33, 294.33 * 2], # D D D 
     ]
 
-    out += ''.join([dsp.mix([''.join([orc.icebells(dsp.mstf(dsp.randint(10, 1000)), p) for i in range(dsp.randint(20, 100))]) for p in pitches]) for i in range(3)])
+    layers = []
+
+    for pitches in pitchgroups:
+        length = pitches[0]
+        tlengths = []
+        while sum(tlengths) < length:
+            tlengths.append(dsp.randint(dsp.mstf(10000), dsp.mstf(100)))
+
+        pitches.pop(0)
+        layer =''
+        for p in pitches:
+            layer += dsp.mix([''.join([orc.icebell(length, p) for length in dsp.randshuffle(tlengths)]) for i in range(6)])
+
+        layers.append(layer)
+
+    icelayers = [dsp.env(l, 'vary') for l in layers]
+    icelayers = [dsp.amp(dsp.env(l, 'sine'), 0.3) for l in icelayers]
+    layers = [dsp.env(l, 'sine') for l in layers]
+    layers.extend(icelayers)
+    out += dsp.mix(layers, 6.0)
 
     out = dsp.write(out, 'olive-oil-gets-nowhere')
 
@@ -32,11 +51,6 @@ class Orc:
 
     def __init__(self):
         self.ice = dsp.read('ice.wav')
-
-    def icebells(self, length, pitches, out=''):
-        out += dsp.mix([self.icebell(length, p) for p in pitches]) 
-
-        return out
 
     def icebell(self, length, pitch, out=''):
         numcycles = length / dsp.htf(pitch)
