@@ -247,7 +247,11 @@ def breakpoint(values, size=512):
     gsizespill = size % (len(values)-1)
 
     # Pretend the first loop shifts the last endval to the startval
-    endval = values[0]
+    try:
+        if len(values[0]) > 1:
+            endval = values[0][1]
+    except TypeError:
+        endval = values[0]
     values.pop(0)
 
     # To build the list of points, loop through each value
