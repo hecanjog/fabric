@@ -15,8 +15,8 @@ def main(out=''):
     layers.append(orc.pings(dsp.mstf(100), dsp.stf(40), (50 * 2**6, 75 * 2**6)))
     layers.append(orc.pings(dsp.mstf(101), dsp.stf(40), (50 * 2**6, 75 * 2**6)))
     layers = [dsp.env(dsp.mix(layers), 'line')] # Mix and envelope pings down to layer 0 
-    layers.append(orc.opening(dsp.stf(120)))
-    layers.append(orc.bells_opening())
+    layers.append(orc.opening(dsp.stf(200)))
+    layers.append(orc.bells_prelude() + orc.bells_opening())
     out += dsp.mix(layers, False)
 
     layers = []
@@ -76,6 +76,14 @@ class Orc:
     def swells(self, length, pitch, env='sine2pi', amp=0.15, fmod=1.05, out=''):
         out += dsp.mix([dsp.pulsar(dsp.tone(length, pitch, env, amp), (1.0, fmod, 'random'), (0.6, 1.0, 'vary'), dsp.rand()) for i in range(3)])
         out = dsp.fill(out, length)
+        return out
+
+    def bells_prelude(self, out=''):
+        out += self.bell_stream([(75, dsp.stf(10), 0.4)])
+        out += self.bell_stream([(75, dsp.stf(11), 0.4)])
+        out += self.bell_stream([(75, dsp.stf(12), 0.4)])
+        out += self.bell_stream([(75, dsp.stf(14), 0.5)])
+
         return out
 
     def bells_opening(self, out=''):
