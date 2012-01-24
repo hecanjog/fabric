@@ -31,5 +31,13 @@ class TestBreakpoint(unittest.TestCase):
         # Size 40
         self.assertEqual(len(dsp.breakpoint([1,2,3,4], 40)), 40)
 
+class TestUnitConversion(unittest.TestCase):
+    def test_conversion(self):
+        self.assertEqual(dsp.stf(1), dsp.audio_params[2])
+        self.assertEqual(dsp.mstf(1000), dsp.stf(1))
+        self.assertEqual(dsp.mstf(1000), dsp.audio_params[2])
+        self.assertEqual(dsp.ftms(dsp.mstf(1000)), dsp.mstf(dsp.ftms(1000)))
+
+
 if __name__ == '__main__':
     unittest.main()
