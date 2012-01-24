@@ -74,10 +74,6 @@ def packet_shuffle(list, packet_size):
             big_list.extend(shuffled_list)
         return big_list
 
-def string_split(audio_string, length):
-    packets = len(audio_string) / length
-    return [audio_string[length*i:(length*i)+length] for i in range(packets)]
-
 def list_split(list, packet_size):
     trigs = []
     for i in range(len(list)):
@@ -95,9 +91,6 @@ def list_split(list, packet_size):
             newlist.append(packets)
 
     return newlist
-
-def ratio(numerator, denominator):
-    return float(numerator) / float(denominator)
 
 def timer(cmd='start'):
     global thetime
@@ -134,11 +127,6 @@ def tone(length=44100, freq=440, wavetype='sine2pi', amp=1.0, blocksize=0):
         cycles = ''.join([blocksize * cycle(freq * rand(0.99, 1.0), wavetype, amp) for i in range(numblocks)])
     else:
         cycles = numcycles * cycle(freq * rand(0.99, 1.0), wavetype, amp)
-
-    #if(flen(cycles) < length):
-        #print 'too short!', fts(length - flen(cycles))
-    #print 'generated a tone', fts(flen(cycles)), 'seconds long'
-    #print
 
     return cycles 
 
@@ -332,7 +320,12 @@ def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
             bsize = size / randint(2, 16)
 
         btable = [ [wave_types[randint(0, len(wave_types)-1)], rand(lowval, highval)] for i in range(bsize) ]
-        btable[0] = lowval
+
+        if len(btable) > 0:
+            btable[0] = lowval
+        else:
+            btable = [lowval]
+
         wtable = breakpoint(btable, size) 
     elif wtype == "flat":
         wtable = [highval for i in range(size)]
@@ -538,18 +531,11 @@ def cut(string, start, length):
 
     return string[start : start + length]
 
-def check_string(string):
-    # Check to see if the input string divides evenly by the byte width
-    if len(string) % audio_params[1] * audio_params[0] > 0:
-        print 'dsp.split(): your string is probably fucked up. check your math.'
-
 def split(string, size):
     # size is given in frames (aka samples)
 
     # Multiply the number of frames we want by the current byte width
     frames = int(size) * audio_params[1] * audio_params[0]
-
-    check_string(string)
 
     return [string[frames * count : (frames * count) + frames] for count in range(len(string) / frames)]
 
@@ -566,28 +552,11 @@ def vsplit(input, minsize, maxsize):
 
     return output
 
-def walk(snd_flen, range=(0,1), position=(0,10)):
-    start = snd_flen * float(range[0])
-    end = snd_flen * float(range[1])
-
-    pos = float(position[0]) / float(position[1])
-
-    pos *= end - start
-    pos += start
-
-    #print '    walk!', range, position, pos
-
-    return int(pos)
-
 def bpm2ms(bpm):
     return 60000.0 / float(bpm)
 
 def bpm2frames(bpm):
     return int((bpm2ms(bpm) / 1000.0) * audio_params[2]) 
-
-def argr(args, k, v):
-    args[k] = v
-    return args
 
 def pantamp(pan_pos):
     # Translate the pan position into a tuple size two of left amp and right amp
@@ -637,11 +606,6 @@ def panenv(sound, ptype='line', etype='sine', panlow=0.0, panhigh=1.0, envlow=0.
     packets = [pan(p, ptable[i], etable[i]) for i, p in enumerate(packets)]
 
     return ''.join(packets)
-
-def rangetowidth(low, high):
-    width = high - low
-    width += low
-    return width
 
 def pulsar(sound, freq=(1.0, 1.01, 'random'), amp=(0.0, 1.0, 'random'), pan_pos=0.5):
     slices = split(sound, dsp_grain)
