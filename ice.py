@@ -40,9 +40,33 @@ def main(out=''):
     icelayers = [dsp.amp(dsp.env(l, 'sine'), 0.5) for l in icelayers]
     layers = [dsp.env(l, 'sine') for l in layers]
     layers.extend(icelayers)
-    out += dsp.mix(layers, True, 6.0)
+    out = [dsp.mix(layers, True, 6.0)]
 
-    out = dsp.write(out, 'olive-oil-gets-nowhere')
+    layers = []
+
+    pitchgroups = [[p for p in dsp.randshuffle(pitches)] for pitches in dsp.randshuffle(pitchgroups)]
+
+    for pitches in pitchgroups:
+        length = pitches[0]
+        tlengths = []
+        while sum(tlengths) < length:
+            tlengths.append(dsp.randint(dsp.mstf(4000), dsp.mstf(200)))
+
+        pitches.pop(0)
+        layer =''
+        for p in pitches:
+            layer += dsp.mix([''.join([orc.icebell(length, p) for length in dsp.randshuffle(tlengths)]) for i in range(6)])
+
+        layers.append(layer)
+
+    icelayers = [dsp.env(l, 'vary') for l in layers]
+    icelayers = [dsp.amp(dsp.env(l, 'sine'), 0.5) for l in icelayers]
+    layers = [dsp.env(l, 'sine') for l in layers]
+    layers.extend(icelayers)
+
+    out.append(dsp.mix(layers, True, 6.0))
+
+    out = dsp.write(dsp.mix(out), 'olive-oil-gets-nowhere')
 
     dsp.timer('stop')
 
