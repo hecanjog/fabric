@@ -12,7 +12,6 @@ import struct
 import string
 import time
 import hashlib
-
 from datetime import datetime
 
 audio_params = (2, 2, 44100, 0, "NONE", "not_compressed") 
@@ -462,10 +461,12 @@ def htf(hz):
 
 def timestamp_filename():
     current_time = str(datetime.time(datetime.now()))
-    current_time = string.replace(current_time, ":", ".")
+    current_time = current_time.split(':')
+    current_seconds = current_time[2].split('.')
+    current_time = current_time[0] + '.' + current_time[1] + '.' + current_seconds[0]
     current_date = str(datetime.date(datetime.now()))
 
-    return current_date + "_" + current_time + "_"
+    return current_date + "_" + current_time
 
 def write(audio_string, filename, timestamp = True, dirname="renders"):
     if timestamp == True:
