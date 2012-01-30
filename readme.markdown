@@ -1,12 +1,12 @@
 # Fabric 0
 
-Fabric is a computer music system written in Python 2.x with the standard library.
+Fabric is a computer music system written with the Python v2.x standard library.
 It is intended to be used for offline/non-realtime computer music composition. 
 
 It aims to be highly portable, hackable, understandable and powerful. 
-Fabric aspires to one day be the Logo of computer music.
+Fabric aspires to one day be the Logo of computer music. No big deal!
 
-The system currently implements basic wavetable synthesis and provides tools for
+The system currently implements simple wavetable synthesis and provides tools for
 processing sound in the time domain. Frequency domain tools may be added if the 
 author learns how that darn FFT works, or when support for pluggable DSP engines 
 is implemented in version 3.
@@ -49,6 +49,7 @@ is implemented in version 3.
 
 ## Version 5
 
+- API freeze
 - Full lesson plans for the following age groups:
     - Ages 6 - 8
     - Ages 9 - 11
