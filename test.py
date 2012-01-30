@@ -38,6 +38,12 @@ class TestUnitConversion(unittest.TestCase):
         self.assertEqual(dsp.mstf(1000), dsp.audio_params[2])
         self.assertEqual(dsp.ftms(dsp.mstf(1000)), dsp.mstf(dsp.ftms(1000)))
 
+class TestCycle(unittest.TestCase):
+    def test_lengths(self):
+        freqs = range(1, 20000, 200)
+        for freq in freqs:
+            self.assertEqual(dsp.flen(dsp.cycle(freq, 'random')), dsp.htf(freq))
+
 
 if __name__ == '__main__':
     unittest.main()
