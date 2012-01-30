@@ -25,6 +25,7 @@ seedstep = 0
 seedhash = ''
 
 def lget(list, index, default=True):
+    """ Safely return a selected element from a list and handle IndexErrors """
     try:
         return list[index]
     except IndexError:
@@ -34,6 +35,7 @@ def lget(list, index, default=True):
             return list[0]
 
 def interleave(list_one, list_two):
+    """ Combine two lists by interleaving their elements """
     # find the length of the longest list
     if len(list_one) > len(list_two):
         big_list = len(list_one)
@@ -57,10 +59,9 @@ def interleave(list_one, list_two):
     return combined_lists
 
 def packet_shuffle(list, packet_size):
-    """
+    """ Shuffle a subset of list items in place.
         Takes a list, splits it into sub-lists of size N
-        and shuffles those lists, then collapes them into 
-        original list
+        and shuffles those sub-lists. Returns flattened list.
     """
     if packet_size >= 3 and packet_size <= len(list):
         lists = list_split(list, packet_size)
@@ -74,6 +75,7 @@ def packet_shuffle(list, packet_size):
         return big_list
 
 def list_split(list, packet_size):
+    """ Split a list into groups of size N """
     trigs = []
     for i in range(len(list)):
         if i % int(packet_size) == 0:
@@ -92,6 +94,8 @@ def list_split(list, packet_size):
     return newlist
 
 def timer(cmd='start'):
+    """ Counts elapsed time between start and stop events. 
+        Useful for tracking render time. """
     global thetime
     if cmd == 'start':
         thetime = time.time()
@@ -105,6 +109,8 @@ def timer(cmd='start'):
         return thetime
 
 def transpose(audio_string, amount):
+    """ Transpose an audio fragment by a given amount.
+        1.0 is unchanged, 0.5 is half speed, 2.0 is twice speed, etc """
     amount = 1.0 / amount
 
     audio_string = audioop.ratecv(audio_string, 2, 2, 44100, int(44100 * amount), None)
@@ -112,6 +118,7 @@ def transpose(audio_string, amount):
     return audio_string[0]
 
 def byte_string(number):
+    """ Return integer encoded as bytes formatted for wave data """
     return struct.pack("<h", number)
 
 def tone(length=44100, freq=440, wavetype='sine2pi', amp=1.0, blocksize=0):
@@ -460,6 +467,7 @@ def htf(hz):
     return int(frames)
 
 def timestamp_filename():
+    """ Generate a datetime string to add to filenames """
     current_time = str(datetime.time(datetime.now()))
     current_time = current_time.split(':')
     current_seconds = current_time[2].split('.')
@@ -469,6 +477,7 @@ def timestamp_filename():
     return current_date + "_" + current_time
 
 def write(audio_string, filename, timestamp = True, dirname="renders"):
+    """ Write audio data to renders directory with the Python wave module """
     if timestamp == True:
         filename = dirname + '/' + filename + '-' + timestamp_filename() + '.wav' 
     else:
@@ -480,6 +489,8 @@ def write(audio_string, filename, timestamp = True, dirname="renders"):
     return filename
 
 def read(filename):
+    """ Read a 44.1k / 16bit WAV file from disk with the Python wave module. 
+        Mono files are converted to stereo automatically. """
     filename = snddir + filename
     print 'loading', filename
 
@@ -499,15 +510,6 @@ def read(filename):
     snd.data = file_frames
 
     return snd
-
-def spread(packets, width = (1, 1), prob = 0.5):
-    packets = [pan(p, (width[0] * rand(), width[1] * rand()), probability(prob)) for p in packets]
-
-    return packets
-
-def probability(prob):
-    # returns weighted random boolean 
-    return rand() > prob
 
 def insert_into(haystack, needle, position):
     # split string at position index
