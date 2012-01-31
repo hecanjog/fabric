@@ -11,24 +11,35 @@ def main(out=''):
     dsp.snddir = 'sounds/'
     orc = Orc()
 
-    layers = []
-    layers.append(orc.pings(dsp.mstf(100), dsp.stf(40), (50 * 2**6, 75 * 2**6)))
-    layers.append(orc.pings(dsp.mstf(101), dsp.stf(40), (50 * 2**6, 75 * 2**6)))
-    layers = [dsp.env(dsp.mix(layers), 'line')] # Mix and envelope pings down to layer 0 
-    layers.append(orc.opening(dsp.stf(200)))
-    layers.append(orc.bells_prelude() + orc.bells_opening())
-    out += dsp.mix(layers, False)
+    #layers = []
+    #layers.append(orc.pings(dsp.mstf(100), dsp.stf(40), (50 * 2**6, 75 * 2**6)))
+    #layers.append(orc.pings(dsp.mstf(101), dsp.stf(40), (50 * 2**6, 75 * 2**6)))
+    #layers = [dsp.env(dsp.mix(layers), 'line')] # Mix and envelope pings down to layer 0 
+    #layers.append(orc.opening(dsp.stf(200)))
+    #layers.append(orc.bells_prelude() + orc.bells_opening())
+    #out += dsp.mix(layers, False)
 
     layers = []
+
+    bells = orc.bells_opening()
+
+    layers.append(orc.clicks(dsp.stf(60), [3*4, 3*2], [1]))
+    layers.append(dsp.env(orc.hat(dsp.stf(60), [6*4*6]), 'line'))
+    layers.append(dsp.env(orc.pat(dsp.stf(60), [3*4], [0,0,1,0,0,1,1,0,1])))
     layers.append(orc.phasesaw(dsp.stf(60), 32.7, 0.15, 1.03))
-    layers.append(orc.bells_opening())
     layers.append(orc.pings(dsp.mstf(100), dsp.stf(60), (50 * 2**6, 80 * 2**6)))
     layers.append(orc.pings(dsp.mstf(101), dsp.stf(60), (50 * 2**6, 80 * 2**6)))
     out += dsp.mix(layers)
 
     layers = []
+    layers.append(orc.snares(dsp.stf(60), [3*4*8], [0,1,0,1]))
+    layers.append(orc.clicks(dsp.stf(60), [3*4*2, 3*4*3], [0,1,0,1,0,0,1]))
+    layers.append(orc.clicks(dsp.stf(60), [3*4, 3*2], [1]))
+    layers.append(orc.hat(dsp.stf(60), [3*4*8]))
+    layers.append(orc.pat(dsp.stf(60), [3*4, 3*4*2, 3*4*3], [0,0,1,0,0,1,1,0,1]))
     layers.append(orc.phasesaw(dsp.stf(60), 65.4 * 0.5, 0.1, 1.01))
-    layers.append(orc.bells_opening())
+    layers.append(orc.slicer(bells, dsp.stf(60), [3*4*8, 3*4*6, 3*4, 3*6, 3*8], [1,0,1,1,0,0]))
+    layers.append(orc.slicer(bells, dsp.stf(60), [3*4*16, 3*4*8, 3*4*12], [1,0]))
     layers.append(orc.pings(dsp.mstf(100), dsp.stf(60), (50 * 2**6, 80 * 2**6)))
     layers.append(orc.pings(dsp.mstf(101), dsp.stf(60), (50 * 2**6, 80 * 2**6)))
     out += dsp.mix(layers)
@@ -49,6 +60,100 @@ class Orc:
         layers.extend([self.swells(length, tonic * i, 'saw', drift_width, drift_speed) for i in range(4)])
 
         out += dsp.mix(layers)
+
+        return out
+
+    def slicer(self, snd, length, divisions, pattern, out=''):
+        slices = []
+        for division in divisions:
+            slen = int(length / float(division))
+            slice = []
+            for i in range(division):
+                if pattern[i % len(pattern)] == 0:
+                    aslice = dsp.pad('', 0, slen)
+                else:
+                    start = int(i * (dsp.flen(snd) / float(division) - dsp.mstf(1000))) + dsp.mstf(dsp.randint(1, 1000))
+                    clen = int(dsp.rand(slen * 0.5, slen))
+                    aslice = dsp.cut(snd, start, clen)
+                    aslice = dsp.pad(dsp.env(aslice, 'random'), 0, slen - dsp.flen(aslice))
+
+                slice.append(aslice)
+
+            slices.append(''.join(slice))
+
+        out += dsp.mix(slices)
+
+        return out
+
+
+    def snares(self, length, divisions, pattern, out=''):
+        snares = []
+        noise = ''.join([dsp.byte_string(dsp.randint(-32768, 32767)) for i in range(length / max(divisions))])
+        for division in divisions:
+            clen = int(length / float(division))
+            asnare = range(division)
+            for i in range(division):
+                snare = dsp.cut(noise, 0, int(dsp.rand(clen * 0.025, clen * 0.15)))
+                asnare[i] = dsp.amp(snare, pattern[i % len(pattern)])
+                asnare[i] = dsp.env(asnare[i], dsp.randchoose(['phasor', 'vary']))
+
+            asnare = ''.join([dsp.pad(s, 0, clen - dsp.flen(s)) for s in asnare])
+            snares.append(asnare)
+
+        out += dsp.amp(dsp.mix(snares), 0.55)
+
+        return out
+
+    def clicks(self, length, divisions, pattern, out=''):
+        clicks = []
+        noise = ''.join([dsp.byte_string(dsp.randint(-32768, 32767)) for i in range(length / max(divisions))])
+        for division in divisions:
+            clen = int(length / float(division))
+            click = dsp.cut(noise, 0, int(dsp.rand(clen * 0.0125, clen * 0.25)))
+            click = [click for i in range(division)]
+            for i in range(division):
+                if i % len(pattern) == 0:
+                    pattern = dsp.rotate(pattern, 1)
+                    click[i] = dsp.amp(click[i], pattern[i % len(pattern)])
+
+            clicks.append(''.join([dsp.pad(dsp.env(c, 'random'), 0, clen - dsp.flen(c)) for c in click]))
+
+        out += dsp.amp(dsp.mix(clicks), 0.65)
+
+        return out
+
+    def hat(self, length, divisions, out=''):
+        t = dsp.env(dsp.tone(dsp.mstf(20), 11000), 'phasor', True)
+        hats = []
+        for division in divisions:
+            hlen = int(length / float(division))
+            hats.append(dsp.pad(t, 0, hlen - dsp.flen(t)) * division)
+
+        out += dsp.mix(hats)
+
+        return out
+
+    def pat(self, length, divisions, pattern, out=''):
+        t = dsp.env(dsp.tone(dsp.mstf(60), 10000), 'phasor', True)
+
+        pats = []
+        for division in divisions:
+            plen = int(length / float(division))
+            psublen = int(plen / float(len(pattern)))
+            pat = [dsp.env(dsp.tone(dsp.mstf(dsp.randint(20, 100)), dsp.randint(9500, 12000)), 'phasor', True) for i in range(len(pattern))]
+            pat = [dsp.randchoose(pat) for i in range(division * len(pattern))]
+
+            for i,p in enumerate(pat):
+                if i % len(pattern) == 0:
+                    pattern = dsp.rotate(pattern, 1)
+
+                pat[i] = dsp.amp(p, pattern[i % len(pattern)])
+           
+            pat = [dsp.pad(p, 0, psublen - dsp.flen(p)) for p in pat]
+            pats.append(''.join(pat))
+
+        out += dsp.amp(dsp.mix(pats), 0.75)
+            
 
         return out
 
