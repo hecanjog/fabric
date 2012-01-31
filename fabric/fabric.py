@@ -93,6 +93,13 @@ def list_split(list, packet_size):
 
     return newlist
 
+def rotate(list, start):
+    """ Rotate a list by a given offset """
+    if start > len(list) - 1:
+        start = len(list) - 1
+
+    return list[start:] + list[:start]
+
 def timer(cmd='start'):
     """ Counts elapsed time between start and stop events. 
         Useful for tracking render time. """
