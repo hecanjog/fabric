@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
 
-""" Ding dong :: www.hecanjog.com
+""" ding dong :: www.hecanjog.com :: (cc) by-nc-sa 
 """
 
 import wave
@@ -142,6 +142,28 @@ def tone(length=44100, freq=440, wavetype='sine2pi', amp=1.0, blocksize=0):
         cycles = numcycles * cycle(freq * rand(0.99, 1.0), wavetype, amp)
 
     return cycles 
+
+def chirp(numcycles, lfreq, hfreq, length=0, reps=1, etype=False):
+    # Sweep from low freq to high freq
+    freqs = wavetable('line', numcycles, hfreq, lfreq)
+    freqs = [cycle(f) for f in freqs]
+    out = ''.join(freqs)
+
+    # Envelope
+    if etype is not False:
+        out = env(out, etype, True)
+
+    # Add padding
+    if length > 0:
+        out = pad(out, 0, length - flen(out))
+
+    # Multiply
+    out = out * reps
+
+    return out
+
+def noise(length):
+    return ''.join([byte_string(randint(-32768, 32767)) for i in range(length * audio_params[0])])
 
 def cycle(freq, wavetype='sine2pi', amp=1.0):
     wavecycle = wavetable(wavetype, htf(freq))
