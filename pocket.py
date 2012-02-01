@@ -21,14 +21,15 @@ def main(out=''):
 
     layers = []
 
-    bells = orc.bells_opening()
+    bells = orc.bells_rhythm()
 
-    layers.append(orc.clicks(dsp.stf(60), [3*4, 3*2], [1]))
-    layers.append(dsp.env(orc.hat(dsp.stf(60), [6*4*6]), 'line'))
-    layers.append(dsp.env(orc.pat(dsp.stf(60), [3*4], [0,0,1,0,0,1,1,0,1])))
-    layers.append(orc.phasesaw(dsp.stf(60), 32.7, 0.15, 1.03))
-    layers.append(orc.pings(dsp.mstf(100), dsp.stf(60), (50 * 2**6, 80 * 2**6)))
-    layers.append(orc.pings(dsp.mstf(101), dsp.stf(60), (50 * 2**6, 80 * 2**6)))
+    slen = dsp.stf(30)
+    layers.append(orc.clicks(slen, [3*2, 3], [1]))
+    layers.append(dsp.env(orc.hat(slen, [6*2*6]), 'line'))
+    layers.append(dsp.env(orc.pat(slen, [3*2], [0,0,1,0,0,1,1,0,1])))
+    layers.append(orc.phasesaw(slen, 32.7, 0.15, 1.03))
+    layers.append(orc.pings(dsp.mstf(100), slen, (50 * 2**6, 80 * 2**6)))
+    layers.append(orc.pings(dsp.mstf(101), slen, (50 * 2**6, 80 * 2**6)))
     out += dsp.mix(layers)
 
     layers = []
@@ -189,6 +190,13 @@ class Orc:
         out += self.bell_stream([(75, dsp.stf(12), 0.4)])
         out += self.bell_stream([(75, dsp.stf(14), 0.5)])
 
+        return out
+
+    def bells_rhythm(self, out=''):
+        overtones = range(1, 13)
+        bells = [self.bell_stream([(75 * o, dsp.stf(5), 0.4) for o in overtones]) for i in range(10)]
+        bells = [dsp.pulsar(b) for b in bells]
+        out += dsp.mix(bells)
         return out
 
     def bells_opening(self, out=''):
