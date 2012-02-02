@@ -3,7 +3,7 @@
 
 import fabric.fabric as dsp
 
-def main(out=''):
+def main(out='', layers=[]):
     """ sending dreams to she downstream """
     dsp.timer('start')
     dsp.seed('pocket')
@@ -11,43 +11,45 @@ def main(out=''):
     dsp.snddir = 'sounds/'
     orc = Orc()
 
-    #layers = []
-    #layers.append(orc.pings(dsp.mstf(100), dsp.stf(40), (50 * 2**6, 75 * 2**6)))
+    #layers = [ orc.pings(dsp.mstf(100), dsp.stf(40), (50 * 2**6, 75 * 2**6)) ]
     #layers.append(orc.pings(dsp.mstf(101), dsp.stf(40), (50 * 2**6, 75 * 2**6)))
     #layers = [dsp.env(dsp.mix(layers), 'line')] # Mix and envelope pings down to layer 0 
     #layers.append(orc.opening(dsp.stf(200)))
     #layers.append(orc.bells_prelude() + orc.bells_opening())
     #out += dsp.mix(layers, False)
 
-    layers = []
-
     bells = orc.bells_rhythm()
 
-    slen = dsp.stf(30)
-    layers.append(orc.clicks(slen, [3*2, 3], [1]))
-    layers.append(dsp.env(orc.hat(slen, [6*2*6]), 'line'))
-    layers.append(dsp.env(orc.pat(slen, [3*2], [0,0,1,0,0,1,1,0,1])))
-    layers.append(orc.phasesaw(slen, 32.7, 0.15, 1.03))
-    layers.append(orc.pings(dsp.mstf(100), slen, (50 * 2**6, 80 * 2**6)))
-    layers.append(orc.pings(dsp.mstf(101), slen, (50 * 2**6, 80 * 2**6)))
-    out += dsp.mix(layers)
+    #slen = dsp.stf(30)
+    #layers =  [ orc.clicks(slen, [3*2, 3], [1]) ]
+    #layers += [ dsp.env(orc.hat(slen, [6*2*6]), 'line') ]
+    #layers += [ dsp.env(orc.pat(slen, [3*2], [0,0,1,0,0,1,1,0,1])) ]
 
-    layers = []
-    layers.append(orc.snares(dsp.stf(60), [3*4*8], [0,1,0,1]))
-    layers.append(orc.clicks(dsp.stf(60), [3*4*2, 3*4*3], [0,1,0,1,0,0,1]))
-    layers.append(orc.clicks(dsp.stf(60), [3*4, 3*2], [1]))
-    layers.append(orc.hat(dsp.stf(60), [3*4*8]))
-    layers.append(orc.pat(dsp.stf(60), [3*4, 3*4*2, 3*4*3], [0,0,1,0,0,1,1,0,1]))
-    layers.append(orc.phasesaw(dsp.stf(60), 65.4 * 0.5, 0.1, 1.01))
-    layers.append(orc.slicer(bells, dsp.stf(60), [3*4*8, 3*4*6, 3*4, 3*6, 3*8], [1,0,1,1,0,0]))
-    layers.append(orc.slicer(bells, dsp.stf(60), [3*4*16, 3*4*8, 3*4*12], [1,0]))
-    layers.append(orc.pings(dsp.mstf(100), dsp.stf(60), (50 * 2**6, 80 * 2**6)))
-    layers.append(orc.pings(dsp.mstf(101), dsp.stf(60), (50 * 2**6, 80 * 2**6)))
+    #layers += [ orc.slicer(bells, slen, [3*4, 3*6, 3, 3*8], [1]) ]
+    
+    #layers += [ orc.pings(dsp.mstf(100), slen, (50 * 2**6, 80 * 2**6)) ]
+    #layers += [ orc.pings(dsp.mstf(101), slen, (50 * 2**6, 80 * 2**6)) ]
+
+    #out += dsp.mix(layers)
+
+    slen = dsp.stf(60)
+    layers =  [ orc.snares(slen, [3*4*8 for i in range(3)], [0,1]) ]
+    layers += [ orc.clicks(slen, [3*4*2, 3*4*3], [0,1,0,1,0,0,1]) ]
+    layers += [ dsp.amp(orc.clicks(slen, [3*4, 3*2], [1]), 0.5) ]
+    layers += [ orc.hat(slen, [3*4*8]) ]
+    layers += [ orc.pat(slen, [3*4, 3*4*2, 3*4*3], [0,0,1,0,0,1,1,0,1]) ]
+
+    layers += [ orc.slicer(bells, slen, [3*4*8, 3*4*6, 3*4, 3*6, 3*8], [1,0,1,1,0,0]) ]
+    layers += [ orc.slicer(bells, slen, [3*4*16, 3*4*8, 3*4*12], [1,0]) ]
+    layers += [ orc.slicer(bells, slen, [3*4*8, 3*4*12], [0,1,0]) ]
+
+    layers += [ orc.pings(dsp.mstf(100), slen, (50 * 2**6, 80 * 2**6)) ]
+    layers += [ orc.pings(dsp.mstf(101), slen, (50 * 2**6, 80 * 2**6)) ]
+
     out += dsp.mix(layers)
 
     out = dsp.write(out, 'pocket', True)
     dsp.timer('stop')
-
 
 class Orc:
     """ make sound """
@@ -89,25 +91,24 @@ class Orc:
 
     def snares(self, length, divisions, pattern, out=''):
         snares = []
-        noise = ''.join([dsp.byte_string(dsp.randint(-32768, 32767)) for i in range(length / max(divisions))])
         for division in divisions:
             clen = int(length / float(division))
             asnare = range(division)
             for i in range(division):
-                snare = dsp.cut(noise, 0, int(dsp.rand(clen * 0.025, clen * 0.15)))
+                snare = dsp.amp(dsp.noise(241), 0.2) + dsp.chirp(dsp.randint(1000, 1010), 9000, 14000, clen - 241, 1, 'phasor')
                 asnare[i] = dsp.amp(snare, pattern[i % len(pattern)])
-                asnare[i] = dsp.env(asnare[i], dsp.randchoose(['phasor', 'vary']))
 
-            asnare = ''.join([dsp.pad(s, 0, clen - dsp.flen(s)) for s in asnare])
+            asnare = ''.join(asnare)
+            asnare = dsp.mix([dsp.amp(asnare, 1.1), dsp.pulsar(asnare)])
             snares.append(asnare)
 
-        out += dsp.amp(dsp.mix(snares), 0.55)
+        out += dsp.mix(snares)
 
         return out
 
     def clicks(self, length, divisions, pattern, out=''):
         clicks = []
-        noise = ''.join([dsp.byte_string(dsp.randint(-32768, 32767)) for i in range(length / max(divisions))])
+        noise = dsp.noise(length / max(divisions))
         for division in divisions:
             clen = int(length / float(division))
             click = dsp.cut(noise, 0, int(dsp.rand(clen * 0.0125, clen * 0.25)))
@@ -119,7 +120,7 @@ class Orc:
 
             clicks.append(''.join([dsp.pad(dsp.env(c, 'random'), 0, clen - dsp.flen(c)) for c in click]))
 
-        out += dsp.amp(dsp.mix(clicks), 0.65)
+        out += dsp.amp(dsp.mix(clicks), 0.25)
 
         return out
 
@@ -193,10 +194,18 @@ class Orc:
         return out
 
     def bells_rhythm(self, out=''):
-        overtones = range(1, 13)
-        bells = [self.bell_stream([(75 * o, dsp.stf(5), 0.4) for o in overtones]) for i in range(10)]
-        bells = [dsp.pulsar(b) for b in bells]
+        bells = [self.bell(75 * i, dsp.stf(20), 0.4) for i in range(1,9)]
+        bells = [dsp.env(b, 'random') for b in bells]
         out += dsp.mix(bells)
+
+        bells = [self.bell(75 * 1.5 * i, dsp.stf(20), 0.4) for i in range(1,9)]
+        bells = [dsp.env(b, 'random') for b in bells]
+        out += dsp.mix(bells)
+
+        bells = [self.bell(75 * 1.25 * i, dsp.stf(20), 0.4) for i in range(1,9)]
+        bells = [dsp.env(b, 'random') for b in bells]
+        out += dsp.mix(bells)
+
         return out
 
     def bells_opening(self, out=''):
