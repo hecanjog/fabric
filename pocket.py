@@ -10,15 +10,19 @@ def main(out='', layers=[]):
     dsp.snddir = 'sounds/'
     orc = Orc()
 
+    orc.tonic = 75.0
+
     slen = dsp.stf(80)
     layers = [ orc.slicer(orc.bells_rhythm(slen, [0.5, 1.0]), slen, [2], [1]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [1.5, 2.25]), slen, [2], [1]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [2.25, 3.0]), slen, [2], [1]) ]
-    out += dsp.mix(layers, True, 0.15)
+    out += dsp.mix(layers, True, 0.12)
 
     out += dsp.env(dsp.amp(dsp.noise(dsp.stf(1)), 0.2), 'line')
     out += orc.clicks(dsp.stf(0.5), [3], [1])
     out += orc.clicks(dsp.stf(0.25), [2], [1])
+
+    orc.tonic = 74.8
 
     slen = dsp.stf(40)
     layers = [ orc.slicer(orc.bells_rhythm(slen, [0.5, 1.0]), slen, [4, 2], [1]) ]
@@ -32,37 +36,60 @@ def main(out='', layers=[]):
     out += orc.clicks(dsp.stf(0.25), [1], [1])
     out += dsp.pad('', 0, dsp.mstf(100))
 
-    slen = dsp.stf(25)
+    ##################
+    # A
+
+    slen = dsp.stf(20)
+    orc.tonic = 75.0
+
     layers = [ orc.slicer(orc.bells_rhythm(slen, [0.5, 1.0]), slen, [4, 2], [1,0]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [1.5, 2.5]), slen, [4, 2], [1,0]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [2.5, 3.0]), slen, [4, 2], [1,0]) ]
     layers = [dsp.amp(l, 0.6) for l in layers]
 
+    layers += [ orc.melody(slen, [[4.0, 6.0], [3.0, 5.0]], [6, 4], [1]) ]
+    layers += [ orc.melody(slen, [[4.0, 6.666], [2.0, 4.5]], [3, 2], [1]) ]
+
     layers += [ orc.snares(slen, [3*2*8 for i in range(3)], [0,1]) ]
     layers += [ orc.hat(slen, [3*2*8]) ]
     layers += [ orc.pat(slen, [3*2, 3*2*2, 3*2*3], [0,0,1,0,0,1,1,0,1]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [2.0, 3.0, 1.0]), slen, [3*4*16], [1,0,0]) ]
+
     out += dsp.mix(layers)
 
+    ##################
+    # B
+
     slen = dsp.stf(31)
+
     layers = [ orc.slicer(orc.bells_rhythm(slen, [0.5, 1.0]), slen, [4, 8], [1,0]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [1.5, 2.25]), slen, [4, 8], [1,0]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [2.25, 3.0]), slen, [4, 8], [1,0]) ]
     layers = [dsp.amp(l, 0.5) for l in layers]
 
+    layers += [ orc.melody(slen, [[4.0, 6.0], [3.0, 5.0]], [3, 2], [1]) ]
+    layers += [ orc.melody(slen, [[4.0, 6.0], [3.0, 5.0]], [6, 12], [0,0,1]) ]
+    
     layers += [ orc.snares(slen, [3*4*8 for i in range(3)], [0,1]) ]
     layers += [ orc.hat(slen, [3*4*8]) ]
     layers += [ orc.hat(slen, [3*4*16]) ]
     layers += [ orc.pat(slen, [3*4, 3*4*2, 3*4*4], [0,0,1]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [1.0, 1.5, 1.667, 2.25]), slen, [3*8*8], [1,0,0]) ]
     layers += [ orc.clicks(slen, [3*4*2, 3*4*3], [0,1,0,1,0,0,1]) ]
+
     out += dsp.mix(layers)
 
+    ##################
+    # C
+
     slen = dsp.stf(28)
+
     layers = [ orc.slicer(orc.bells_rhythm(slen, [0.5, 1.0]), slen, [4, 8], [1,0]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [1.888, 2.25]), slen, [4, 8], [1,0]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [2.25, 3.0]), slen, [4, 8], [1,0]) ]
     layers = [dsp.amp(l, 0.5) for l in layers]
+
+    layers += [ orc.melody(slen, [[4.0, 6.0], [3.0, 5.0]], [3, 2], [1]) ]
 
     layers += [ orc.snares(slen, [2*4*8 for i in range(3)], [0,1]) ]
     layers += [ orc.hat(slen, [2*4*8]) ]
@@ -70,14 +97,22 @@ def main(out='', layers=[]):
     layers += [ orc.pat(slen, [2*4, 2*4*2, 2*4*4], [0,0,1]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [4.0, 1.0, 1.5, 2.25, 3.0]), slen, [2*8*8], [1,0,0]) ]
     layers += [ orc.clicks(slen, [2*4*2, 2*4*3], [0,1,0,1,0,0,1]) ]
+
     out += dsp.mix(layers)
 
     out += orc.clicks(dsp.stf(0.25), [1], [1])
+
+    ##################
+    # D
+
     slen = dsp.stf(23)
+
     layers = [ orc.slicer(orc.bells_rhythm(slen, [0.5, 1.0]), slen, [4, 8], [1,0]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [1.5, 2.25]), slen, [4, 8], [1,0]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [2.25, 3.0]), slen, [4, 8], [1,0]) ]
     layers = [dsp.amp(l, 0.5) for l in layers]
+
+    layers += [ orc.melody(slen, [[4.0, 6.0], [3.0, 5.0]], [3, 2], [1]) ]
 
     layers += [ orc.snares(slen, [3*4*8 for i in range(3)], [0,1]) ]
     layers += [ orc.hat(slen, [3*4*8]) ]
@@ -85,58 +120,89 @@ def main(out='', layers=[]):
     layers += [ orc.pat(slen, [3*4, 3*4*2, 3*4*4], [0,0,1]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [2.0, 3.0, 1.667, 2.25]), slen, [3*8*8], [1]) ]
     layers += [ orc.clicks(slen, [3*4*2, 3*4*3, 3*8*2], [0,1,0,1,0,0,1]) ]
+
     out += dsp.mix(layers)
 
     out += orc.clicks(dsp.stf(0.5), [1], [1])
     out += dsp.pad('', 0, dsp.mstf(100))
 
+    ##################
+    # E
+
     slen = dsp.stf(26)
+
     layers = [ orc.slicer(orc.bells_rhythm(slen, [0.5, 1.0]), slen, [4, 2], [1,0]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [1.5, 2.5]), slen, [4, 2], [1,0]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [2.5, 3.0]), slen, [4, 2], [1,0]) ]
     layers = [dsp.amp(l, 0.6) for l in layers]
+
+    layers += [ orc.melody(slen, [[4.0, 6.0], [3.0, 5.0]], [3, 2], [1]) ]
 
     layers += [ orc.snares(slen, [3*2*8 for i in range(3)], [0,1]) ]
     layers += [ orc.hat(slen, [3*2*8]) ]
     layers += [ orc.pat(slen, [3*2, 3*2*2, 3*2*3], [0,0,1,0,0,1,1,0,1]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [3.0, 2.666, 1.667]), slen, [3*4*16], [1,0,0]) ]
+
     out += dsp.mix(layers)
 
+    ##################
+    # F
+
     slen = dsp.stf(16)
+
     layers = [ orc.slicer(orc.bells_rhythm(slen, [0.5, 1.0]), slen, [2, 1], [1,0]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [1.5, 2.5]), slen, [2, 1], [1,0]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [2.5, 3.0]), slen, [2, 1], [1,0]) ]
     layers = [dsp.amp(l, 0.6) for l in layers]
 
+    layers += [ orc.melody(slen, [[4.0, 6.0], [3.0, 5.0]], [3, 2], [1]) ]
+
     layers += [ orc.snares(slen, [3*2*4 for i in range(3)], [0,1]) ]
     layers += [ orc.hat(slen, [3*2*4]) ]
     layers += [ orc.pat(slen, [3, 3*2, 3*3], [0,0,1,0,0,1,1,0,1]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [3.0, 2.666, 1.667]), slen, [3*2*16], [1,0,0]) ]
+
     out += dsp.mix(layers)
 
+    ##################
+    # G
+    
     slen = dsp.stf(50)
+    orc.tonic = 50.0
+
     layers = [ orc.slicer(orc.bells_rhythm(slen, [0.5, 1.0]), slen, [4, 2], [1,0]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [1.5, 2.5]), slen, [4, 2], [1,0]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [2.5, 3.0]), slen, [4, 2], [1,0]) ]
     layers = [dsp.amp(l, 0.6) for l in layers]
 
+    layers += [ orc.melody(slen, [[4.0, 6.0], [3.0, 5.0]], [3, 2], [1]) ]
+
     layers += [ dsp.env(orc.snares(slen, [3*2*8 for i in range(3)], [0,1]), 'phasor') ]
     layers += [ dsp.env(orc.hat(slen, [3*2*8]), 'phasor') ]
     layers += [ orc.pat(slen, [3*2, 3*2*2, 3*2*3], [0,0,1,0,0,1,1,0,1]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [3.0, 2.666, 1.667]), slen, [3*4*16], [1,0,0]) ]
+
     out += dsp.mix(layers)
 
     out += orc.clicks(dsp.stf(0.75), [12], [1])
 
+    ###################
+    # H
+
     slen = dsp.stf(100)
+
     layers = [ orc.slicer(orc.bells_rhythm(slen, [0.5, 1.0, 1.5]), slen, [2], [1]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [1.5, 2.0, 2.25]), slen, [2], [1]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [2.25, 3.0, 4.0]), slen, [2], [1]) ]
-    layers += [ orc.pings(dsp.mstf(100), slen, (50 * 2**6, 75 * 2**6)) ]
-    layers += [ orc.pings(dsp.mstf(101), slen, (50 * 2**6, 75 * 2**6)) ]
+    layers += [ orc.pings(dsp.mstf(100), slen, (48 * 2**6, 74 * 2**6)) ]
+    layers += [ orc.pings(dsp.mstf(101), slen, (49 * 2**6, 74.5 * 2**6)) ]
+
+    layers += [ orc.melody(slen, [[4.0, 6.0], [3.0, 5.0]], [3, 4], [1,0]) ]
+    layers += [ orc.melody(slen, [[4.0, 6.0], [3.0, 5.0]], [3, 2], [0,1]) ]
+
     out += dsp.mix(layers, True, 0.15)
 
-    out += dsp.env(dsp.amp(dsp.noise(dsp.stf(1)), 0.2), 'line')
+    out += dsp.env(dsp.amp(dsp.noise(dsp.stf(2)), 0.12), 'line')
     out += orc.clicks(dsp.stf(0.75), [5], [1])
     out += orc.clicks(dsp.stf(0.5), [8], [1])
 
@@ -146,17 +212,24 @@ def main(out='', layers=[]):
 class Orc:
     """ make sound """
 
-    def phasesaw(self, length, tonic, drift_width, drift_speed, harmony=150.0, out=''):
-        layers = []
-        layers.append(self.swells(length, harmony * 1.5))
-        layers.append(self.swells(length, (harmony / 6 + harmony) * 1.5))
-        layers = [dsp.env(dsp.mix(layers), 'line')] # Mix and enveloping swells down to layer 0
+    tonic = 75.0
 
-        layers.extend([self.swells(length, tonic * i, 'saw', drift_width, drift_speed) for i in range(4)])
+    def melody(self, length, pitches, divisions, pattern, out=''):
+        melodies = []
+        for division in divisions:
+            mlen = int(length / float(division))
+            melody = ''
+            for i in range(division):
+                if pattern[i % len(pattern)] > 0:
+                    melody += dsp.env(dsp.mix([self.swells(mlen, p * self.tonic, 'gauss') for p in pitches[i % len(pitches)]]), 'random')
+                else:
+                    melody += dsp.pad('', 0, mlen)
+            melodies += [melody]
 
-        out += dsp.mix(layers)
+        out += dsp.mix(melodies)
 
         return out
+        
 
     def slicer(self, snd, length, divisions, pattern, out=''):
         slices = []
@@ -181,7 +254,6 @@ class Orc:
         out += dsp.mix([slices, dsp.amp(dsp.pulsar(slices), 0.45)])
 
         return out
-
 
     def snares(self, length, divisions, pattern, out=''):
         snares = []
@@ -225,7 +297,7 @@ class Orc:
             hlen = int(length / float(division))
             hats.append(dsp.pad(t, 0, hlen - dsp.flen(t)) * division)
 
-        out += dsp.mix(hats)
+        out += dsp.amp(dsp.mix(hats), 0.65)
 
         return out
 
@@ -248,7 +320,7 @@ class Orc:
             pat = [dsp.pad(p, 0, psublen - dsp.flen(p)) for p in pat]
             pats.append(''.join(pat))
 
-        out += dsp.amp(dsp.mix(pats), 0.75)
+        out += dsp.amp(dsp.mix(pats), 0.55)
             
 
         return out
@@ -261,88 +333,17 @@ class Orc:
         out += ''.join([dsp.pulsar(tone, (1.0, 1.05, 'random'), (1.0, 1.0, 'line'), dsp.rand()) for i in range(length / dsp.flen(tone))])
         return out
 
-    def opening(self, length, amp=0.5, env_type='sine2pi', out=''):
-        print 'opening!', length, env_type
-
-        low = dsp.mix([dsp.env(dsp.tone(length, (i+1)*25.0 + dsp.rand(0.0, 0.01), 'saw', amp), 'sine') for i in range(8)])
-        mid = dsp.mix([dsp.env(dsp.tone(length, (i+1)*75.1 + dsp.rand(0.0, 0.01), 'saw', amp), 'sine') for i in range(24)])
-
-        high = dsp.mix([dsp.env(dsp.tone(length, (i+1)*50.05 + dsp.rand(0.0, 0.01), 'random', amp), 'sine') for i in range(24)])
-        higher = dsp.mix([dsp.env(dsp.tone(length, (i+1)*100.05 + dsp.rand(0.0, 0.01), 'random', amp), 'sine') for i in range(12)])
-
-        out += dsp.amp(dsp.mix([low,mid, dsp.env(dsp.mix([high, higher]), 'line')]), 0.7)
-        
-        return out
-
-    def swells(self, length, pitch, env='sine2pi', amp=0.15, fmod=1.05, out=''):
+    def swells(self, length, pitch, env='sine2pi', amp=0.35, fmod=1.01, out=''):
         out += dsp.mix([dsp.pulsar(dsp.tone(length, pitch, env, amp), (1.0, fmod, 'random'), (0.6, 1.0, 'vary'), dsp.rand()) for i in range(3)])
         out = dsp.fill(out, length)
         return out
 
-    def bells_prelude(self, out=''):
-        out += self.bell_stream([(75, dsp.stf(12), 0.4)])
-        out += dsp.mix([self.bell_stream([(75, dsp.stf(14), 0.5)]), self.bell_stream([(75 * 3.0, dsp.stf(14), 0.5)])])
-
-        return out
-
     def bells_rhythm(self, length, mults=[1.0, 1.5, 1.25], out=''):
-        tones = [[dsp.tone(length, 75 * m * i, 'sine2pi', 0.2) for i in range(1, 5)] for m in mults]
+        tones = [[dsp.tone(length, self.tonic * m * i, 'sine2pi', 0.2) for i in range(1, 5)] for m in mults]
         tones =  [dsp.mix([dsp.env(t, 'random') for t in tone]) for tone in tones] 
         out += dsp.mix(tones)
 
         return out
-
-    def bells_opening(self, out=''):
-
-        notes = [
-            [(200, dsp.stf(3), 0.3), (199, dsp.stf(5.8), 0.4), (75, dsp.stf(4), 0.3)],
-            [(100, dsp.stf(3), 0.3), (201, dsp.stf(5.8), 0.4), (150, dsp.stf(3), 0.2)],
-            [(50, dsp.stf(3), 0.3), (300, dsp.stf(5.8), 0.4), (75 / 2, dsp.stf(3), 0.3)],
-        ]
-
-        streams = [self.bell_stream(n) for n in notes]
-        out += dsp.mix(streams)
-
-        notes[0][1] = (175, dsp.stf(5), 0.35)
-        notes[1][1] = (175 / 2, dsp.stf(5), 0.4)
-        notes[2][1] = (175 * 2, dsp.stf(5), 0.3)
-
-        notes[0][2] = (130, dsp.stf(3), 0.35)
-        notes[1][2] = (130 / 2, dsp.stf(3), 0.35)
-        notes[2][2] = (130 * 2, dsp.stf(3), 0.35)
-        streams = [self.bell_stream(n) for n in notes]
-        out += dsp.mix(streams)
-
-        notes[0][1] = (199, dsp.stf(6.5), 0.35)
-        notes[1][1] = (201 / 2, dsp.stf(6.5), 0.4)
-        notes[2][1] = (300 * 2, dsp.stf(6.5), 0.3)
-
-        notes[0][2] = (75, dsp.stf(5), 0.3)
-        notes[1][2] = (150, dsp.stf(5), 0.3)
-        notes[2][2] = (75 / 2, dsp.stf(5), 0.3)
-        streams = [self.bell_stream(n) for n in notes]
-        out += dsp.mix(streams)
-
-        notes[0][0] = (130 / 2, dsp.stf(5), 0.35)
-        notes[1][0] = (130, dsp.stf(4), 0.4)
-        notes[2][0] = (130 / 4, dsp.stf(4), 0.3)
-
-        notes[0][2] = (120, dsp.stf(8), 0.4)
-        notes[1][2] = (120 / 2, dsp.stf(8), 0.4)
-        notes[2][2] = (120 / 4, dsp.stf(8), 0.4)
-
-        notes[0][1] = (199, dsp.stf(4), 0.3)
-        notes[1][1] = (201, dsp.stf(4), 0.3)
-        notes[2][1] = (300, dsp.stf(4), 0.3)
-
-        streams = [self.bell_stream(n, 2.0) for n in notes]
-        out += dsp.mix(streams)
-
-        return out
-
-    def bell_stream(self, notes, mult=1.0):
-        bells = [self.bell(n[0] * mult, n[1], n[2]) for n in notes]
-        return ''.join(bells)
 
     def bell(self, freq, length, amp):
         bell = dsp.tone(length, freq, 'sine2pi', amp)
