@@ -4,9 +4,14 @@
 import fabric.fabric as dsp
 
 def main(out=''):
+    """ www.hecanjog.com :: (cc) by-nc-sa """
+    
+    # Put william.wav into the sounds directory before running!
+    # Download it here: sounds.hecanjog.com/william.wav
+
     dsp.timer('start') 
     dsp.snddir = 'sounds/'
-    dsp.seed('duet')
+    dsp.seed('goat formants')
 
     orc = Orc()
 
@@ -57,14 +62,14 @@ def main(out=''):
 
     out += dsp.mix([dsp.mix(layers, False, 4.0), suns], False)
 
-    out = dsp.write(out, 'duet', True)
+    out = dsp.write(out, 'goat_formants', False)
     dsp.timer('stop')
 
 class Orc:
     """ Do things, play things """
 
     def __init__(self):
-        self.horn = dsp.read('william/william.wav')
+        self.horn = dsp.read('william.wav')
 
     def burstsun(self, snd, length, out=''):
         numtimes = int(length / dsp.mstf(1000))
