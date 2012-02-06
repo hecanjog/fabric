@@ -78,7 +78,7 @@ def main(out='', layers=[]):
     ##################
     # C
 
-    slen = dsp.stf(30)
+    slen = dsp.stf(28)
 
     layers = [ orc.slicer(orc.bells_rhythm(slen, [0.5, 1.0]), slen, [4, 8], [1,0]) ]
     layers += [ orc.slicer(orc.bells_rhythm(slen, [1.888, 2.25]), slen, [4, 8], [1,0]) ]
@@ -98,8 +98,6 @@ def main(out='', layers=[]):
 
     out += dsp.mix(layers)
 
-    #out += orc.clicks(dsp.stf(0.25), [1], [1])
-
     ##################
     # D
 
@@ -110,7 +108,8 @@ def main(out='', layers=[]):
     layers += [ orc.slicer(orc.bells_rhythm(slen, [2.25, 3.0]), slen, [4, 8], [1,0]) ]
     layers = [dsp.amp(l, 0.5) for l in layers]
 
-    layers += [ orc.melody(slen, [[3.75, 6.666], [1.667, 5.0]], [3, 2], [1]) ]
+    layers += [ orc.melody(slen, [[3.75, 6.666], [1.667, 3.75 * 2]], [3, 2], [1]) ]
+    layers += [ orc.melody(slen, [[3.75, 6.666], [1.667, 3.75 * 2]], [3, 2], [1]) ]
 
     layers += [ orc.snares(slen, [3*4*8 for i in range(3)], [0,1]) ]
     layers += [ orc.hat(slen, [3*4*8]) ]
@@ -229,6 +228,7 @@ def main(out='', layers=[]):
     out += orc.clicks(dsp.stf(0.75), [5], [1])
     out += orc.clicks(dsp.stf(0.5), [8], [1])
 
+    out = dsp.amp(out, 2.0) # in future, master gain adjustment would be nice
     out = dsp.write(out, 'sending_dreams_to_she_downstream', False) 
     dsp.timer('stop')
 
@@ -244,6 +244,7 @@ class Orc:
             mlen = int(length / float(division))
             melody = ''
             for i in range(division):
+                pitches = dsp.rotate(pitches, 1)
                 if pattern[i % len(pattern)] > 0:
                     melody += dsp.env(dsp.mix([self.swells(mlen, p * self.tonic, 'gauss') for p in pitches[i % len(pitches)]]), dsp.randchoose(etypes))
                 else:
