@@ -2,29 +2,32 @@ import fabric.fabric as dsp
 import math
 
 dsp.timer('start') 
-dsp.seed('silent')
-psize = 99 
+dsp.seed('rhythm')
 
-# I forgot my headphones and I'm in a library, so who knows what this sounds like?
+# Rhythm, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 
 
-etypes = ['line','sine','cos','impulse','sine2pi','cos2pi','saw','tri','flat']
+etypes = ['phasor','line','impulse','saw','tri','flat']
 
-def brown(size):
-    browns = dsp.wavetable('sine', size)
-    browns = [ math.fabs(b + (dsp.rand(-0.02,0.02)) * dsp.rand(1.0,1.1)) for b in browns ]
-    return browns
+tlen = dsp.stf(30)
+tonic = 293.7 / 2
 
-browns = brown(psize)
-points = [[dsp.randchoose(etypes), browns[i]] for i in range(psize)]
+divisions = [ tlen / i for i in range(1,301) ]
 
-sweeps = [dsp.breakpoint(points, psize * 99) for i in range(9)] 
-sweeps = [[dsp.cycle(f * 1000 + 80, 'tri') for f in freqs] for freqs in sweeps]
-sweeps = [''.join(s) for s in sweeps]
-sweeps = [dsp.pan(s, dsp.rand(0.0, 1.0)) for s in sweeps]
+rhythms = []
 
-out = dsp.mix(sweeps, False, 0.5) # Right-aligned
-out += dsp.mix(sweeps, True, 0.5) # Left-aligned
+for d in divisions:
+    numbleeps = tlen / d + (tlen % d)
+    freq = tonic * (1 + (1.0 / d))
+    tone = dsp.tone(d, freq)
+    bleeps = [ dsp.cut(tone, 0, dsp.mstf(dsp.randint(d * 0.1, d * 0.75))) for i in range(numbleeps) ]
+    bleeps = [ dsp.env(b, dsp.randchoose(etypes), True) for b in bleeps ]
+    bleeps = [ dsp.pad(b, 0, d - dsp.flen(b)) for b in bleeps ]
+    bleeps = [ dsp.pan(b, dsp.rand(0.0,1.0)) for b in bleeps ]
 
-print dsp.write(out, 'haiku-12-02-09-silent', False)
+    rhythms += [ ''.join(bleeps) ]
+
+out = dsp.mix(rhythms)
+
+print dsp.write(out, 'haiku-12-02-10-rhythm', False)
 
 dsp.timer('stop')
