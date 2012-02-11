@@ -2,22 +2,22 @@ import fabric.fabric as dsp
 import math
 
 dsp.timer('start') 
-dsp.seed('rhythm')
+dsp.seed('rhythm variation')
 
-# Rhythm, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 
+# Rhythm variation
 
 etypes = ['phasor','line','impulse','saw','tri','flat']
 
 tlen = dsp.stf(30)
-tonic = 293.7 / 2
+tonic = 222.0
 
-divisions = [ tlen / i for i in range(1,301) ]
+divisions = [ tlen / i for i in range(31,61) ]
 
 rhythms = []
 
-for d in divisions:
+for i,d in enumerate(divisions):
     numbleeps = tlen / d + (tlen % d)
-    freq = tonic * (1 + (1.0 / d))
+    freq = tonic * i 
     tone = dsp.tone(d, freq)
     bleeps = [ dsp.cut(tone, 0, dsp.mstf(dsp.randint(d * 0.1, d * 0.75))) for i in range(numbleeps) ]
     bleeps = [ dsp.env(b, dsp.randchoose(etypes), True) for b in bleeps ]
@@ -28,6 +28,6 @@ for d in divisions:
 
 out = dsp.mix(rhythms)
 
-print dsp.write(out, 'haiku-12-02-10-rhythm', False)
+print dsp.write(out, 'haiku-12-02-11-rhythm-variation', False)
 
 dsp.timer('stop')
