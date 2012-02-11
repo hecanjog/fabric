@@ -2,32 +2,32 @@ import fabric.fabric as dsp
 import math
 
 dsp.timer('start') 
-dsp.seed('rhythm variation')
+dsp.seed('driftless')
 
-# Rhythm variation
+# let 100 partials bloom
 
-etypes = ['phasor','line','impulse','saw','tri','flat']
+partials = 100
+tonic = 100.0
+length = dsp.stf(60)
 
-tlen = dsp.stf(30)
-tonic = 222.0
+freqs = [ tonic * i for i in range(1, partials + 1) ]
+durations = [ length / i + (length % i) for i in range(1, partials + 1) ]
 
-divisions = [ tlen / i for i in range(31,61) ]
+bleeps = []
+for i in range(partials):
+    bleep = dsp.tone(dsp.mstf(100), freqs[i])
+    if durations[i] > dsp.mstf(100):
+        bleep = dsp.env(bleep, 'phasor', True)
+        bleep = dsp.pad(bleep, 0, durations[i] - dsp.flen(bleep))
+    else:
+        bleep = dsp.cut(bleep, 0, durations[i])
+        bleep = dsp.env(bleep, 'phasor', True)
 
-rhythms = []
+    bleep = [ dsp.pan(bleep, dsp.rand()) for i in range(length / durations[i]) ]
+    bleeps += [ ''.join(bleep) ]
 
-for i,d in enumerate(divisions):
-    numbleeps = tlen / d + (tlen % d)
-    freq = tonic * i 
-    tone = dsp.tone(d, freq)
-    bleeps = [ dsp.cut(tone, 0, dsp.mstf(dsp.randint(d * 0.1, d * 0.75))) for i in range(numbleeps) ]
-    bleeps = [ dsp.env(b, dsp.randchoose(etypes), True) for b in bleeps ]
-    bleeps = [ dsp.pad(b, 0, d - dsp.flen(b)) for b in bleeps ]
-    bleeps = [ dsp.pan(b, dsp.rand(0.0,1.0)) for b in bleeps ]
+out = dsp.mix(bleeps)
 
-    rhythms += [ ''.join(bleeps) ]
-
-out = dsp.mix(rhythms)
-
-print dsp.write(out, 'haiku-12-02-11-rhythm-variation', False)
+print dsp.write(out, 'haiku-12-02-11-driftless', False)
 
 dsp.timer('stop')
