@@ -2,32 +2,53 @@ import fabric.fabric as dsp
 import math
 
 dsp.timer('start') 
-dsp.seed('driftless')
+dsp.seed('multiples')
 
-# let 100 partials bloom
+# It's John Cage day at the University of Iowa. I just heard 
+# lecture on nothing and the sontas and interludes, and now there's 
+# a music circus happening in the Iowa City mall. Brass!
 
-partials = 100
-tonic = 100.0
-length = dsp.stf(60)
+def asound():
+    material = dsp.randchoose(['tone','harmony','noise'])
+    if material is 'tone':
+        pitch = dsp.rand(20, 20000)
+        length = dsp.randint(1, dsp.stf(10))
+        silence = dsp.randint(0, dsp.stf(10))
+        sound = dsp.tone(length, pitch, 'random', dsp.rand(0.001, 2.0))
+        sound = dsp.env(sound, 'random', True)
+        sound = dsp.pan(sound, dsp.rand())
+        sound = dsp.pad(sound, silence / 2, silence / 2)
+    elif material is 'harmony':
+        pitches = [dsp.rand(20, 20000) for i in range(dsp.randint(1,10))]
+        lengths = [dsp.randint(1, dsp.stf(10)) for i in pitches]
+        silences = [dsp.randint(0, dsp.stf(10)) for i in pitches]
+        sound = [dsp.tone(lengths[i], pitches[i], 'random', dsp.rand(0.001, 2.0)) for i in range(len(pitches))]
+        sound = [dsp.env(dsp.pan(s, dsp.rand()), 'random', True) for s in sound]
+        sound = [dsp.pad(s, silences[i] / 2, silences[i] / 2) for i,s in enumerate(sound)]
+        sound = dsp.mix(sound)
+    elif material is 'noise':
+        length = dsp.rand(1, dsp.stf(10))
+        amp = dsp.rand(0.001, 2.0)
+        silence = dsp.randint(0, dsp.stf(10))
+        sound = dsp.noise(length)
+        sound = dsp.env(sound, 'random', True)
+        sound = dsp.pan(sound, dsp.rand())
+        sound = dsp.amp(sound, amp)
+        sound = dsp.pad(sound, silence / 2, silence / 2)
 
-freqs = [ tonic * i for i in range(1, partials + 1) ]
-durations = [ length / i + (length % i) for i in range(1, partials + 1) ]
+    return sound
 
-bleeps = []
-for i in range(partials):
-    bleep = dsp.tone(dsp.mstf(100), freqs[i])
-    if durations[i] > dsp.mstf(100):
-        bleep = dsp.env(bleep, 'phasor', True)
-        bleep = dsp.pad(bleep, 0, durations[i] - dsp.flen(bleep))
-    else:
-        bleep = dsp.cut(bleep, 0, durations[i])
-        bleep = dsp.env(bleep, 'phasor', True)
+sounds = []
+for i in range(dsp.randint(1,10)):
+    sounds += [ ''.join([asound() for i in range(dsp.randint(1,10))]) ]
 
-    bleep = [ dsp.pan(bleep, dsp.rand()) for i in range(length / durations[i]) ]
-    bleeps += [ ''.join(bleep) ]
+out = dsp.mix(sounds)
 
-out = dsp.mix(bleeps)
+for i in range(dsp.randint(1,10)):
+    sounds += [ ''.join([asound() for i in range(dsp.randint(1,10))]) ]
 
-print dsp.write(out, 'haiku-12-02-11-driftless', False)
+out += dsp.mix(sounds)
+
+print dsp.write(out, 'haiku-12-02-12-multiples', False)
 
 dsp.timer('stop')
