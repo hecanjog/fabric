@@ -229,6 +229,8 @@ def main(out='', layers=[]):
     out += orc.clicks(dsp.stf(0.5), [8], [1])
 
     out = dsp.amp(out, 2.0) # in future, master gain adjustment would be nice
+
+    out = dsp.mix([out, orc.large_and_growing()])
     out = dsp.write(out, 'sending_dreams_to_she_downstream', False) 
     dsp.timer('stop')
 
@@ -359,6 +361,24 @@ class Orc:
     def swells(self, length, pitch, env='sine2pi', amp=0.35, fmod=1.01, out=''):
         out += dsp.mix([dsp.pulsar(dsp.tone(length, pitch, env, amp), (1.0, fmod, 'random'), (0.6, 1.0, 'vary'), dsp.rand()) for i in range(3)])
         out = dsp.fill(out, length)
+        return out
+
+    def large_and_growing(self, out=''):
+        out += dsp.pad('', 0, dsp.stf(170))
+
+        freqs = [self.tonic, self.tonic * 1.5]
+        out += dsp.env(dsp.mix([self.swells(dsp.stf(180), freq, 'saw') for freq in freqs]))
+
+        out += dsp.pad('', 0, dsp.stf(40))
+
+        freqs = [self.tonic, self.tonic * 1.667]
+        out += dsp.env(dsp.mix([self.swells(dsp.stf(180), freq, 'saw') for freq in freqs]))
+
+        out += dsp.pad('', 0, dsp.stf(30))
+
+        freqs = [self.tonic, self.tonic * 1.667, self.tonic * 2.5, self.tonic * 4.0]
+        out += dsp.env(dsp.mix([self.swells(dsp.stf(180), freq, 'saw') for freq in freqs]), 'line')
+
         return out
 
     def bells_rhythm(self, length, mults=[1.0, 1.5, 1.25], boost=0.5, out=''):
