@@ -231,13 +231,31 @@ def main(out='', layers=[]):
     out = dsp.amp(out, 2.0) # in future, master gain adjustment would be nice
 
     out = dsp.mix([out, dsp.cut(orc.large_and_growing(), 0, dsp.flen(out))])
-    out = dsp.write(out, 'sending_dreams_to_she_downstream', False) 
+    out = dsp.write(orc.compress(out), 'sending_dreams_to_she_downstream', False) 
     dsp.timer('stop')
 
 class Orc:
     """ make sound """
 
     tonic = 75.0
+
+    def compress(self, sound, out=''):
+        import audioop
+
+        # Rude & crude - later on should split by zero crossings
+        sound = dsp.split(sound, 256)
+
+        for i, ms in enumerate(sound):
+            peak = audioop.maxpp(ms, dsp.audio_params[1])
+            peak = peak / 65534.0
+            diff = 1.0 - peak
+            sound[i] = dsp.amp(ms, 1.0 + diff)
+
+        out += ''.join(sound)
+
+        return out
+
+
 
     def melody(self, length, pitches, divisions, pattern, out=''):
         melodies = []
@@ -358,26 +376,26 @@ class Orc:
         out += ''.join([dsp.pulsar(tone, (1.0, 1.05, 'random'), (1.0, 1.0, 'line'), dsp.rand()) for i in range(length / dsp.flen(tone))])
         return out
 
-    def swells(self, length, pitch, env='sine2pi', amp=0.35, fmod=1.01, out=''):
-        out += dsp.mix([dsp.pulsar(dsp.tone(length, pitch, env, amp), (1.0, fmod, 'random'), (0.6, 1.0, 'vary'), dsp.rand()) for i in range(3)])
+    def swells(self, length, pitch, env='sine2pi', amp=0.35, fmod=1.01, pan=0.5, out=''):
+        out += dsp.mix([dsp.pulsar(dsp.pan(dsp.tone(length, pitch, env, amp), pan), (1.0, fmod, 'random'), (0.6, 1.0, 'vary'), dsp.rand()) for i in range(3)])
         out = dsp.fill(out, length)
         return out
 
     def large_and_growing(self, out=''):
         out += dsp.pad('', 0, dsp.stf(170))
 
-        freqs = [self.tonic, self.tonic * 1.5]
-        out += dsp.env(dsp.mix([self.swells(dsp.stf(180), freq, 'saw') for freq in freqs]))
+        freqs = [self.tonic, self.tonic * 1.5, self.tonic * 2, self.tonic * 3]
+        out += dsp.env(dsp.mix([self.swells(dsp.stf(110), freq, 'sine2pi', 0.1, 1.0, dsp.rand()) for freq in freqs]))
 
-        out += dsp.pad('', 0, dsp.stf(40))
+        out += dsp.pad('', 0, dsp.stf(10))
 
-        freqs = [self.tonic, self.tonic * 1.667]
-        out += dsp.env(dsp.mix([self.swells(dsp.stf(180), freq, 'saw') for freq in freqs]))
+        freqs = [self.tonic * 2.0, self.tonic * 2 * 1.667]
+        out += dsp.env(dsp.mix([self.swells(dsp.stf(110), freq, 'sine2pi', 0.1, 1.0, dsp.rand()) for freq in freqs]))
 
-        out += dsp.pad('', 0, dsp.stf(30))
+        out += dsp.pad('', 0, dsp.stf(10))
 
-        freqs = [self.tonic, self.tonic * 1.667, self.tonic * 2.5, self.tonic * 4.0]
-        out += dsp.env(dsp.mix([self.swells(dsp.stf(180), freq, 'saw') for freq in freqs]), 'line')
+        freqs = [self.tonic, self.tonic * 1.667, self.tonic * 2.5, self.tonic * 6.0, self.tonic * 4.0]
+        out += dsp.env(dsp.mix([self.swells(dsp.stf(110), freq, 'sine2pi', 0.4, 1.0, dsp.rand()) for freq in freqs]), 'line')
 
         return out
 
