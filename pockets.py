@@ -230,7 +230,7 @@ def main(out='', layers=[]):
 
     out = dsp.amp(out, 2.0) # in future, master gain adjustment would be nice
 
-    out = dsp.mix([out, orc.large_and_growing()])
+    out = dsp.mix([out, dsp.cut(orc.large_and_growing(), 0, dsp.flen(out))])
     out = dsp.write(out, 'sending_dreams_to_she_downstream', False) 
     dsp.timer('stop')
 
