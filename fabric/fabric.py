@@ -563,11 +563,11 @@ def cut(string, start, length):
 
     return string[start : start + length]
 
-def split(string, size):
+def split(string, size, chans=2):
     # size is given in frames (aka samples)
 
     # Multiply the number of frames we want by the current byte width
-    frames = int(size) * audio_params[1] * audio_params[0]
+    frames = int(size) * audio_params[1] * chans 
 
     return [string[frames * count : (frames * count) + frames] for count in range(len(string) / frames)]
 
