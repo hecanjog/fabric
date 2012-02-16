@@ -204,7 +204,6 @@ def stepseed():
 
     return seedint
     
-
 def randint(lowbound=0, highbound=1):
     global seedint
 
@@ -212,7 +211,6 @@ def randint(lowbound=0, highbound=1):
         return int(rand() * (highbound - lowbound) + lowbound)
     else:
         return random.randint(lowbound, highbound)
-
 
 def rand(lowbound=0, highbound=1):
     global seedint
@@ -234,7 +232,6 @@ def randshuffle(input):
             items.remove(item)
 
     return shuffled 
-
 
 def breakpoint(values, size=512):
     """ Takes a list of values, or a pair of wavetable types and values, 
@@ -449,6 +446,19 @@ def pad(string, start, end):
 
     return "%s%s%s" % ((start * zero), string, (end * zero))
 
+def iscrossing(first, second):
+    """ Detects zero crossing between two mono frames """
+
+    if len(first) == 2 and len(second) == 2:
+        first = struct.unpack("<h", first) 
+        second = struct.unpack("<h", second) 
+
+        if first[0] >= 0 and second[0] <= 0:
+            return True
+        elif first[0] <= 0 and second[0] >= 0:
+            return True
+
+    return False
 
 def amp(string, scale):
     return audioop.mul(string, audio_params[1], scale)
@@ -563,13 +573,55 @@ def cut(string, start, length):
 
     return string[start : start + length]
 
+def mixstereo(chans):
+    """ mix a list of two mono sounds into a stereo sound """
+    chans[0] = audioop.tostereo(chans[0], audio_params[1], 1, 0)
+    chans[1] = audioop.tostereo(chans[1], audio_params[1], 0, 1)
+
+    return mix(chans)
+
+def splitmono(string):
+    """ split a stereo sound into a list of mono sounds """
+    left = audioop.tomono(string, audio_params[1], 1, 0)
+    right = audioop.tomono(string, audio_params[1], 0, 1)
+
+    return [left, right] 
+
 def split(string, size, chans=2):
-    # size is given in frames (aka samples)
+    """ split a sound into chunks of size N in frames, or by zero crossings """
+    if size == 0:
+        if chans == 2:
+            # split into mono files
+            tracks = splitmono(string)
 
-    # Multiply the number of frames we want by the current byte width
-    frames = int(size) * audio_params[1] * chans 
+            for i, track in enumerate(tracks):
+                tracks[i] = split(track, 0, 1)
 
-    return [string[frames * count : (frames * count) + frames] for count in range(len(string) / frames)]
+            return tracks
+
+        elif chans == 1:
+            frames = split(string, 1, 1)
+            chunk, chunks = [], []
+
+            for i, frame in enumerate(frames):
+                try:
+                    if chunk == []:
+                        chunk += [ frame ]
+                    elif iscrossing(frame, frames[i+1]) == False and chunk != []:
+                        chunk += [ frame ]
+                    elif iscrossing(frame, frames[i+1]) == True and chunk != []:
+                        chunk += [ frame ]
+                        chunks += [ ''.join(chunk) ]
+                        chunk = []
+                except IndexError:
+                    chunk += [ frame ]
+                    chunks += [ ''.join(chunk) ]
+
+            return chunks
+
+    elif size > 0:
+        frames = int(size) * audio_params[1] * chans 
+        return [string[frames * count : (frames * count) + frames] for count in range(len(string) / frames)]
 
 def vsplit(input, minsize, maxsize):
     # min/max size is in frames...
