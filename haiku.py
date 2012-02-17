@@ -1,32 +1,61 @@
 import fabric.fabric as dsp
+import struct
 
 dsp.timer('start') 
-dsp.seed('crossing')
 
-# Oh my god this is so much faster now.
-# I'm just unpacking each frame on the fly to look for zero crossings instead 
-# of building a lookup table and searching it. Seems ridiculous in retrospect
-# that I thought that would be faster.
+# This is my submission for the 7th disquiet junto project.
 #
-# Anyhow, this is pretty exciting - since this is pretty fast, it means that fabric 
-# can begin to play in the frequency domain soon!
+# The script breaks the sound by zero crossings in each channel, 
+# then reads through each sample in the packet and converts it into 
+# an integer. The integer is then converted into a literal string 
+# and if the ordinal index of any character in the string is divisible 
+# by 5, it replaces that character with a zero. Then, the string is 
+# converted back to an integer, packed back into wave data, and mixed 
+# back into a stereo sound.
+#
+# The result ended up translating the crashing waves into a kind of 
+# soft rolling crackle. I was expecting to have to try several iterations 
+# of different replace-with-zero schemes before landing on something that 
+# sounded nice. Got lucky on the first try, though!
+#
+# The source audio for this composition is a recording by Luftrum of 
+# waves crashing on the shore of Kalundborg Fjord at Røsnæs, Denmark:
+#
+# http://www.freesound.org/people/Luftrum/sounds/48412 
+#
+# More details on the Disquiet Junto at:
+# http://soundcloud.com/groups/disquiet-junto
 
-tonic = 300.0
+crush = dsp.read('sounds/crushing.wav')
+crush = dsp.split(crush.data, 0, 2)
 
-ratios = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0]
-pitches = [tonic * dsp.randchoose(ratios) + i for i in range(30)]
-stack = [dsp.tone(dsp.stf(2), pitches[i] * dsp.randint(1, 4)) for i in range(30)]
-stack = dsp.mix(stack)
+for ci, chan in enumerate(crush):
+    for wi, wavelet in enumerate(chan):
+        # I thought maybe I would do something special
+        # at the wavelet level, but I didn't feel it needed more.
 
-stack = dsp.split(stack, 0, 2)
-for i,c in enumerate(stack):
-    c = dsp.list_split(c, 8)
-    c = [ dsp.env(''.join(b) * dsp.randint(1,100), 'gauss') for b in c ]
-    c = dsp.randshuffle(c)
-    stack[i] = ''.join(c)
+        frames = dsp.split(wavelet, 1, 1)
+        
+        for fi, frame in enumerate(frames):
+            fint = struct.unpack("<h", frame)
 
-out = dsp.mixstereo(stack)
+            fint = str(fint[0])
+            fint = list(fint)
+            
+            for fifi, fc in enumerate(fint):
+                if ord(fc) % 5:
+                    fint[fifi] = "0"
 
-print dsp.write(out, 'haiku-12-02-16-crossing-second-variation', False)
+            fint = ''.join(fint)
+            fint = int(fint)
+            frames[fi] = dsp.byte_string(fint)
+
+        chan[wi] = ''.join(frames)
+
+    crush[ci] = ''.join(chan)
+
+out = dsp.mixstereo(crush)
+
+print dsp.write(out, 'haiku-12-02-17-crushing', False)
 
 dsp.timer('stop')
