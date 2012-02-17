@@ -242,16 +242,19 @@ class Orc:
     def compress(self, sound, out=''):
         import audioop
 
-        # Rude & crude - later on should split by zero crossings
-        sound = dsp.split(sound, 256)
+        # Still rude & crude but now splitting by zero crossings
+        sounds = dsp.split(sound, 0, 2)
 
-        for i, ms in enumerate(sound):
-            peak = audioop.maxpp(ms, dsp.audio_params[1])
-            peak = peak / 65534.0
-            diff = 1.0 - peak
-            sound[i] = dsp.amp(ms, 1.0 + diff)
+        for i, s in enumerate(sounds):
+            for ii, ms in enumerate(s):
+                peak = audioop.maxpp(ms, dsp.audio_params[1])
+                peak = peak / 65534.0
+                diff = 1.0 - peak
+                s[ii] = dsp.amp(ms, 1.0 + diff)
 
-        out += ''.join(sound)
+            sounds[i] = ''.join(s)
+
+        out += dsp.mixstereo(sounds)
 
         return out
 
