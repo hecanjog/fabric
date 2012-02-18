@@ -14,7 +14,7 @@ import time
 import hashlib
 from datetime import datetime
 
-audio_params = (2, 2, 44100, 0, "NONE", "not_compressed") 
+audio_params = [2, 2, 44100, 0, "NONE", "not_compressed"]
 snddir = '' 
 dsp_grain = 64
 env_min = 2 
@@ -118,9 +118,9 @@ def timer(cmd='start'):
 def transpose(audio_string, amount):
     """ Transpose an audio fragment by a given amount.
         1.0 is unchanged, 0.5 is half speed, 2.0 is twice speed, etc """
-    amount = 1.0 / amount
+    amount = 1.0 / float(amount)
 
-    audio_string = audioop.ratecv(audio_string, 2, 2, 44100, int(44100 * amount), None)
+    audio_string = audioop.ratecv(audio_string, audio_params[1], audio_params[0], audio_params[2], int(audio_params[2] * amount), None)
     
     return audio_string[0]
 
@@ -395,7 +395,7 @@ def log(message, mode="a"):
     logfile.write(str(message) + "\n")
     return logfile.close()
 
-def fill(string, length):
+def fill(string, length, chans=2):
     if flen(string) < length:
         repeats = length / flen(string) + 1
         string = string * repeats
@@ -423,7 +423,7 @@ def mix(layers, leftalign=True, boost=2.0):
 
         if len(layer) != ftc(output_length) or len(out) != ftc(output_length):
             dif = int(math.fabs(len(layer) - len(out)))
-            print 'unequal', dif
+            log('unequal'+str(dif))
             if len(out) < len(layer):
                 layer = layer[:len(layer) - dif]
             else:
