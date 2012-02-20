@@ -453,10 +453,14 @@ def iscrossing(first, second):
         first = struct.unpack("<h", first) 
         second = struct.unpack("<h", second) 
 
-        if first[0] >= 0 and second[0] <= 0:
+        if first[0] > 0 and second[0] < 0:
             return True
-        elif first[0] <= 0 and second[0] >= 0:
+        elif first[0] < 0 and second[0] > 0:
             return True
+        elif first[0] == 0 and second[0] != 0:
+            return False 
+        elif first[0] != 0 and second[0] == 0:
+            return True 
 
     return False
 
