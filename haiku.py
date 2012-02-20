@@ -1,52 +1,60 @@
 import fabric.fabric as dsp
-import struct
 
 dsp.timer('start') 
-dsp.seed('william')
+dsp.seed('time')
 
-# A variation on my haiku from yesterday, this time on 
-# a short violin recording from a section of a violin and 
-# computer piece I did with Meg Karls last year. 
+# On the bus from Iowa City to Milwaukee
+# 
+# Violin performed by Meg Karls
+# Source sound here:
+# http://sounds.hecanjog.com/violin-c.wav
 
-crush = dsp.read('sounds/violin-d.wav')
+crush = dsp.read('sounds/violin-c.wav')
 crush = dsp.split(crush.data, 0, 2)
-r = [1.0, 1.5, 2.0]
+
+mult = 16 
 
 dsp.audio_params[0] = 1
 
 for ci, chan in enumerate(crush):
+    print ci, len(chan)
+    lens = [dsp.flen(l) for l in chan]
+    alen = int(sum(lens) / float(len(lens)))
+    numwavelets = dsp.mstf(100) / alen
+
+    print ci, alen, numwavelets
+
+    chan = dsp.list_split(chan, numwavelets)
+
     for wi, wavelet in enumerate(chan):
-        if dsp.randint(0, 10) % 3 > 0:
-            wavelet = wavelet * dsp.randint(2, 8)
-            harm = [dsp.transpose(wavelet, dsp.randchoose(r)) for i in range(3)]
-            harm = [dsp.fill(h, dsp.flen(wavelet)) for h in harm]
-            chan[wi] = dsp.mix(harm)
+        wavelet = ''.join(wavelet)
+        wavelet = dsp.split(wavelet, dsp.flen(wavelet) / 2, 1)
 
-        frames = dsp.split(wavelet, 1, 1)
+        acap = dsp.cut(wavelet[0], 0, dsp.flen(wavelet[0]) / 2)
+        acap = dsp.env(acap * 2, 'gauss', True)
+        acap = dsp.cut(acap, dsp.flen(acap) / 2, dsp.flen(acap) / 2)
 
-        if dsp.randint(0, 10) % 3 > 0:
+        bcap = dsp.cut(wavelet[1], dsp.flen(wavelet[1]) / 2, dsp.flen(wavelet[1]) / 2)
+        bcap = dsp.env(bcap * 2, 'gauss', True)
+        bcap = dsp.cut(bcap, 0, dsp.flen(bcap) / 2)
         
-            for fi, frame in enumerate(frames):
-                fint = struct.unpack("<h", frame)
+        wavelet[0], wavelet[1] = dsp.env(wavelet[0], 'gauss', True), dsp.env(wavelet[1], 'gauss', True)
 
-                fint = str(fint[0])
-                fint = list(fint)
-            
-                for fifi, fc in enumerate(fint):
-                    if ord(fc) % 5 > 0:
-                        fint[fifi] = "0"
+        wmult = dsp.randint(2, mult * 2)
 
-                fint = ''.join(fint)
-                fint = int(fint)
-                frames[fi] = dsp.byte_string(fint)
+        lowerw = [ int(i % 2 == 0) for i in range(wmult - 1) ]
+        upperw = [ i % 2 for i in range(wmult) ]
 
-            chan[wi] = ''.join(frames)
+        wlower = acap + ''.join([wavelet[i] for i in upperw]) + bcap
+        wupper = ''.join([wavelet[i] for i in lowerw])
+        
+        chan[wi] = dsp.mix([wlower, wupper])
 
     crush[ci] = ''.join(chan)
 
 dsp.audio_params[0] = 2 
 out = dsp.mixstereo(crush)
 
-print dsp.write(out, 'haiku-12-02-18-william', False)
+print dsp.write(out, 'haiku-12-02-19-time', True)
 
-dsp.timer('stop')
+dsp.timer('stop') 
