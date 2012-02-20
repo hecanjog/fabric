@@ -1,60 +1,57 @@
 import fabric.fabric as dsp
 
 dsp.timer('start') 
-dsp.seed('time')
+dsp.seed('revember')
 
-# On the bus from Iowa City to Milwaukee
+# On the bus from Milwaukee to Minnesota
+#
+# Mr Tank's poem is currently unused - tomorrow I'll try 
+# mapping its structure to the granular process.
 # 
-# Violin performed by Meg Karls
+# Violin: Meg Karls
+# Poem: WC Tank
+#
 # Source sound here:
 # http://sounds.hecanjog.com/violin-c.wav
 
-crush = dsp.read('sounds/violin-c.wav')
-crush = dsp.split(crush.data, 0, 2)
+poem = """
+its cold everywhere here
+i'm inventing a month called 'revember'
+where there's reverb on every life sound
+and you get to relive warmer
+memories
+"""
 
-mult = 16 
+violin = dsp.read('sounds/violin-d.wav')
 
-dsp.audio_params[0] = 1
+def slow(s, speed=0.5, grainsize=4410, out=''):
+    inlen = dsp.flen(s)
+    targetlen = int(inlen * (1.0 / speed))
 
-for ci, chan in enumerate(crush):
-    print ci, len(chan)
-    lens = [dsp.flen(l) for l in chan]
-    alen = int(sum(lens) / float(len(lens)))
-    numwavelets = dsp.mstf(100) / alen
+    def bestfit(tlen, gsize, depth=0):
+        if tlen % gsize != 0 and depth < 500:
+            gsize = bestfit(tlen, gsize + 1, depth + 1)
+        return gsize
 
-    print ci, alen, numwavelets
+    grainsize = bestfit(targetlen, grainsize)
+    numgrains = targetlen / grainsize
+    
+    grains = []
+    positions = dsp.wavetable('line', numgrains, inlen - grainsize, 0)
+    for i in range(numgrains):
+        grains += [dsp.cut(s, int(positions[i]), grainsize)]
 
-    chan = dsp.list_split(chan, numwavelets)
+    grains = [dsp.env(g, 'sine', True) for g in grains]
+    grains = [''.join(grains), dsp.pad(''.join(grains[1:]), grainsize / 2, grainsize / 2)]
 
-    for wi, wavelet in enumerate(chan):
-        wavelet = ''.join(wavelet)
-        wavelet = dsp.split(wavelet, dsp.flen(wavelet) / 2, 1)
+    out += dsp.mix(grains)
 
-        acap = dsp.cut(wavelet[0], 0, dsp.flen(wavelet[0]) / 2)
-        acap = dsp.env(acap * 2, 'gauss', True)
-        acap = dsp.cut(acap, dsp.flen(acap) / 2, dsp.flen(acap) / 2)
+    return out
 
-        bcap = dsp.cut(wavelet[1], dsp.flen(wavelet[1]) / 2, dsp.flen(wavelet[1]) / 2)
-        bcap = dsp.env(bcap * 2, 'gauss', True)
-        bcap = dsp.cut(bcap, 0, dsp.flen(bcap) / 2)
-        
-        wavelet[0], wavelet[1] = dsp.env(wavelet[0], 'gauss', True), dsp.env(wavelet[1], 'gauss', True)
+violin = dsp.split(violin.data, 4410, 2)
+violins = [''.join([slow(v, dsp.rand(0.1, 2.0), dsp.mstf(dsp.randint(10, 120))) for v in violin]) for i in range(4)] 
+out = dsp.mix(violins)
 
-        wmult = dsp.randint(2, mult * 2)
-
-        lowerw = [ int(i % 2 == 0) for i in range(wmult - 1) ]
-        upperw = [ i % 2 for i in range(wmult) ]
-
-        wlower = acap + ''.join([wavelet[i] for i in upperw]) + bcap
-        wupper = ''.join([wavelet[i] for i in lowerw])
-        
-        chan[wi] = dsp.mix([wlower, wupper])
-
-    crush[ci] = ''.join(chan)
-
-dsp.audio_params[0] = 2 
-out = dsp.mixstereo(crush)
-
-print dsp.write(out, 'haiku-12-02-19-time', True)
+print dsp.write(out, 'haiku-12-02-20-revember', False)
 
 dsp.timer('stop') 
