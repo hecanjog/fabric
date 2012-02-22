@@ -1,18 +1,16 @@
-import fabric.fabric as dsp
+import dsp
+import wes
 
 dsp.timer('start') 
 dsp.seed('revember')
 
-# On the bus from Milwaukee to Minnesota
+# Good enough for tonight.
 #
-# Mr Tank's poem is currently unused - tomorrow I'll try 
-# mapping its structure to the granular process.
-# 
 # Violin: Meg Karls
 # Poem: WC Tank
 #
 # Source sound here:
-# http://sounds.hecanjog.com/violin-c.wav
+# http://sounds.hecanjog.com/violin-d.wav
 
 poem = """
 its cold everywhere here
@@ -22,36 +20,62 @@ and you get to relive warmer
 memories
 """
 
+poem = wes.read(poem)
 violin = dsp.read('sounds/violin-d.wav')
 
-def slow(s, speed=0.5, grainsize=4410, out=''):
-    inlen = dsp.flen(s)
-    targetlen = int(inlen * (1.0 / speed))
+layers = []
+for line in poem:
+    linechars = wes.numchars(line)
 
-    def bestfit(tlen, gsize, depth=0):
-        if tlen % gsize != 0 and depth < 500:
-            gsize = bestfit(tlen, gsize + 1, depth + 1)
-        return gsize
+    # collect segments of violin 
+    # proportional to word lengths
+    sequence = []
+    start = 0
+    for word in line:
+        wordchars = len(word)
 
-    grainsize = bestfit(targetlen, grainsize)
-    numgrains = targetlen / grainsize
-    
-    grains = []
-    positions = dsp.wavetable('line', numgrains, inlen - grainsize, 0)
-    for i in range(numgrains):
-        grains += [dsp.cut(s, int(positions[i]), grainsize)]
+        wordproportion = 1.0 / (linechars / float(wordchars))
+        seglen = int(dsp.flen(violin.data) * wordproportion)
 
-    grains = [dsp.env(g, 'sine', True) for g in grains]
-    grains = [''.join(grains), dsp.pad(''.join(grains[1:]), grainsize / 2, grainsize / 2)]
+        sequence += [ dsp.cut(violin.data, start, seglen) ]
 
-    out += dsp.mix(grains)
+        start += seglen
 
-    return out
+    # break word segments into characters and process
+    for i, clang in enumerate(sequence):
+        chars = list(line[i])
+        charlen = dsp.flen(clang) / len(chars)
+        clang = dsp.split(clang, charlen, 2)
+        shapes = ['line', 'phasor', 'sine', 'cos', 'flat']
+        shapes += ['line' for pad in range(3)]
 
-violin = dsp.split(violin.data, 4410, 2)
-violins = [''.join([slow(v, dsp.rand(0.1, 2.0), dsp.mstf(dsp.randint(10, 120))) for v in violin]) for i in range(4)] 
-out = dsp.mix(violins)
+        for ie, element in enumerate(clang):
+            # determine param based on char and 
+            # process sound
+            oindex = ord(chars[ie])
+            print chars[ie], oindex
 
-print dsp.write(out, 'haiku-12-02-20-revember', False)
+            if oindex < 91 and oindex > 64:
+                speed = dsp.scale(0.05, 2.5, 64, 91, oindex)
+                grainsize = (oindex - 64) * 2 + 10
+            elif oindex < 123 and oindex > 96:
+                speed = dsp.scale(0.05, 2.5, 96, 123, oindex)
+                grainsize = (oindex - 96) * 2 + 10
+            else:
+                speed = 1.0
+                grainsize = 40
+
+            clang[ie] = wes.slow(element, speed, dsp.mstf(grainsize), 0, dsp.randchoose(shapes))
+
+        clang = ''.join(clang)
+
+        sequence[i] = dsp.pad(clang, 0, charlen * 2)
+        print
+
+    layers += [ ''.join(sequence) ]
+
+out = dsp.mix([dsp.pan(l, i / float(len(layers) - 1)) for i,l in enumerate(layers)], False, 3.0)
+
+print dsp.write(out, 'haiku-12-02-21-revember-second', False)
 
 dsp.timer('stop') 
