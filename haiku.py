@@ -4,7 +4,7 @@ import wes
 dsp.timer('start') 
 dsp.seed('revember')
 
-# Good enough for tonight.
+# Good enough for tonight, plus.
 #
 # Violin: Meg Karls
 # Poem: WC Tank
@@ -46,7 +46,7 @@ for line in poem:
         chars = list(line[i])
         charlen = dsp.flen(clang) / len(chars)
         clang = dsp.split(clang, charlen, 2)
-        shapes = ['line', 'phasor', 'sine', 'cos', 'flat']
+        shapes = ['line', 'vary', 'vary', 'phasor', 'sine', 'cos', 'flat']
         shapes += ['line' for pad in range(3)]
 
         for ie, element in enumerate(clang):
@@ -76,6 +76,6 @@ for line in poem:
 
 out = dsp.mix([dsp.pan(l, i / float(len(layers) - 1)) for i,l in enumerate(layers)], False, 3.0)
 
-print dsp.write(out, 'haiku-12-02-21-revember-second', False)
+print dsp.write(out, 'haiku-12-02-22-revember-second-variation', False)
 
 dsp.timer('stop') 
