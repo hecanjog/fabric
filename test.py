@@ -1,4 +1,4 @@
-import fabric.fabric as dsp
+import dsp
 import unittest
 
 class TestBreakpoint(unittest.TestCase):
