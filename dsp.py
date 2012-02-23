@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
 
-""" Ding dong :: www.hecanjog.com
+""" ding dong :: www.hecanjog.com :: (cc) by-nc-sa 
 """
 
 import wave
@@ -12,10 +12,10 @@ import struct
 import string
 import time
 import hashlib
-
+import subprocess
 from datetime import datetime
 
-audio_params = (2, 2, 44100, 0, "NONE", "not_compressed") 
+audio_params = [2, 2, 44100, 0, "NONE", "not_compressed"]
 snddir = '' 
 dsp_grain = 64
 env_min = 2 
@@ -25,7 +25,12 @@ seedint = 0
 seedstep = 0
 seedhash = ''
 
+def play(sound):
+    aplay = subprocess.Popen(["aplay"], stdin=sound)
+    return aplay.communicate()[0]
+
 def lget(list, index, default=True):
+    """ Safely return a selected element from a list and handle IndexErrors """
     try:
         return list[index]
     except IndexError:
@@ -35,6 +40,7 @@ def lget(list, index, default=True):
             return list[0]
 
 def interleave(list_one, list_two):
+    """ Combine two lists by interleaving their elements """
     # find the length of the longest list
     if len(list_one) > len(list_two):
         big_list = len(list_one)
@@ -58,10 +64,9 @@ def interleave(list_one, list_two):
     return combined_lists
 
 def packet_shuffle(list, packet_size):
-    """
+    """ Shuffle a subset of list items in place.
         Takes a list, splits it into sub-lists of size N
-        and shuffles those lists, then collapes them into 
-        original list
+        and shuffles those sub-lists. Returns flattened list.
     """
     if packet_size >= 3 and packet_size <= len(list):
         lists = list_split(list, packet_size)
@@ -74,11 +79,8 @@ def packet_shuffle(list, packet_size):
             big_list.extend(shuffled_list)
         return big_list
 
-def string_split(audio_string, length):
-    packets = len(audio_string) / length
-    return [audio_string[length*i:(length*i)+length] for i in range(packets)]
-
 def list_split(list, packet_size):
+    """ Split a list into groups of size N """
     trigs = []
     for i in range(len(list)):
         if i % int(packet_size) == 0:
@@ -96,10 +98,16 @@ def list_split(list, packet_size):
 
     return newlist
 
-def ratio(numerator, denominator):
-    return float(numerator) / float(denominator)
+def rotate(list, start):
+    """ Rotate a list by a given offset """
+    if start > len(list) - 1:
+        start = len(list) - 1
+
+    return list[start:] + list[:start]
 
 def timer(cmd='start'):
+    """ Counts elapsed time between start and stop events. 
+        Useful for tracking render time. """
     global thetime
     if cmd == 'start':
         thetime = time.time()
@@ -113,13 +121,16 @@ def timer(cmd='start'):
         return thetime
 
 def transpose(audio_string, amount):
-    amount = 1.0 / amount
+    """ Transpose an audio fragment by a given amount.
+        1.0 is unchanged, 0.5 is half speed, 2.0 is twice speed, etc """
+    amount = 1.0 / float(amount)
 
-    audio_string = audioop.ratecv(audio_string, 2, 2, 44100, int(44100 * amount), None)
+    audio_string = audioop.ratecv(audio_string, audio_params[1], audio_params[0], audio_params[2], int(audio_params[2] * amount), None)
     
     return audio_string[0]
 
 def byte_string(number):
+    """ Return integer encoded as bytes formatted for wave data """
     return struct.pack("<h", number)
 
 def tone(length=44100, freq=440, wavetype='sine2pi', amp=1.0, blocksize=0):
@@ -135,12 +146,29 @@ def tone(length=44100, freq=440, wavetype='sine2pi', amp=1.0, blocksize=0):
     else:
         cycles = numcycles * cycle(freq * rand(0.99, 1.0), wavetype, amp)
 
-    #if(flen(cycles) < length):
-        #print 'too short!', fts(length - flen(cycles))
-    #print 'generated a tone', fts(flen(cycles)), 'seconds long'
-    #print
-
     return cycles 
+
+def chirp(numcycles, lfreq, hfreq, length=0, reps=1, etype=False):
+    # Sweep from low freq to high freq
+    freqs = wavetable('line', numcycles, hfreq, lfreq)
+    freqs = [cycle(f) for f in freqs]
+    out = ''.join(freqs)
+
+    # Envelope
+    if etype is not False:
+        out = env(out, etype, True)
+
+    # Add padding
+    if length > 0:
+        out = pad(out, 0, length - flen(out))
+
+    # Multiply
+    out = out * reps
+
+    return out
+
+def noise(length):
+    return ''.join([byte_string(randint(-32768, 32767)) for i in range(length * audio_params[0])])
 
 def cycle(freq, wavetype='sine2pi', amp=1.0):
     wavecycle = wavetable(wavetype, htf(freq))
@@ -181,7 +209,6 @@ def stepseed():
 
     return seedint
     
-
 def randint(lowbound=0, highbound=1):
     global seedint
 
@@ -189,7 +216,6 @@ def randint(lowbound=0, highbound=1):
         return int(rand() * (highbound - lowbound) + lowbound)
     else:
         return random.randint(lowbound, highbound)
-
 
 def rand(lowbound=0, highbound=1):
     global seedint
@@ -212,61 +238,101 @@ def randshuffle(input):
 
     return shuffled 
 
+def breakpoint(values, size=512):
+    """ Takes a list of values, or a pair of wavetable types and values, 
+    and builds an interpolated list of points between each value using 
+    the wavetable type. Default table type is linear. """
 
-def breakpoint(values, size=512, highval=1.0, lowval=0.0):
+    # we need at least a start and end point
     if len(values) < 2:
         values = [ 0.0, ['line', 1.0] ] 
 
-    if size < 2:
-        log('tried to make breakpoint table of size'+str(size))
-        log('values: '+str(values)+' highval: '+str(highval)+' lowval'+str(lowval))
-        return [rand(highval,lowval), rand(highval,lowval)]
+    # Handle some small size cases
+    if size == 0:
+        log('WARNING: breakpoint size 0')
+        log('values: '+str(values))
+        log('')
+        return []
+    elif size < 4 and size > 0:
+        log('WARNING: small breakpoint, size ' + str(size))
+        log('values: '+str(values))
+        log('')
+        return [values[0] for i in range(size)]
 
+    # Need at least one destination value per point computed
     if size < len(values):
         values = values[:size]
 
+    # Each value produces a group of intermediate points
     groups = []
 
-    try:
-        if len(values[0]) > 1:
-            chigh = 0.0 # First value cannot set wtype
-    except TypeError:
-        chigh = values[0]
-
+    # The size of each group of intermediate points is divded evenly into the target 
+    # size, ignoring the first value and accounting for uneven divisions.
     gsize = size / (len(values)-1) 
     gsizespill = size % (len(values)-1)
 
+    # Pretend the first loop shifts the last endval to the startval
+    try:
+        if len(values[0]) > 1:
+            endval = values[0][1]
+    except TypeError:
+        endval = values[0]
+    values.pop(0)
+
+    # To build the list of points, loop through each value
     for i, v in enumerate(values):
-        if i is not 0:
-            try:
-                if len(v) > 1:
-                    wtype = v[0]
-                    clow = chigh
-                    chigh = v[1]
+        try:
+            if len(v) > 1:
+                wtype = v[0]
+                startval = endval 
+                endval = v[1]
 
-                if len(v) == 3:
-                    gsize = gsize * v[2]
-            except TypeError:
-                wtype = 'line'
-                clow = chigh
-                chigh = v
+            if len(v) == 3:
+                gsize = gsize * v[2]
+        except TypeError:
+            wtype = 'line'
+            startval = endval
+            endval = v
 
-            if v == values[-1]:
-                gsize += gsizespill 
+        # Pad last group with leftover points
+        if v == values[-1]:
+            gsize += gsizespill 
 
-            groups.extend(wavetable(wtype, gsize, scale(lowval, highval, 0.0, 1.0, clow), scale(lowval, highval, 0.0, 1.0, chigh)))
+        groups.extend(wavetable(wtype, gsize, endval, startval))
 
     return groups
 
 def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
     wtable = []
-    wave_types = ["sine", "cos", "line", "saw", "impulse", "phasor", "sine2pi", "cos2pi", "vary", "flat"]
+    wave_types = ["sine", "gauss", "cos", "line", "saw", "impulse", "phasor", "sine2pi", "cos2pi", "vary", "flat"]
 
     if wtype == "random":
         wtype = wave_types[randint(0, len(wave_types) - 1)]
 
     if wtype == "sine":
         wtable = [math.sin(i * math.pi) * (highval - lowval) + lowval for i in frange(size, 1.0, 0.0)]
+    elif wtype == "gauss":
+        def gauss(x):
+            # From: http://johndcook.com/python_phi.html
+            # Prolly doing it wrong!
+            a1 =  0.254829592
+            a2 = -0.284496736
+            a3 =  1.421413741
+            a4 = -1.453152027
+            a5 =  1.061405429
+            p  =  0.3275911
+
+            sign = 1
+            if x < 0:
+                sign = -1
+            x = abs(x)/math.sqrt(2.0)
+
+            t = 1.0/(1.0 + p * x)
+            y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * math.exp(-x * x)
+
+            return abs(abs(sign * y) - 1.0)
+
+        wtable = [gauss(i) * (highval - lowval) + lowval for i in frange(size, 2.0, -2.0)] 
     elif wtype == "sine2pi":
         wtable = [math.sin(i * math.pi * 2) * (highval - lowval) + lowval for i in frange(size, 1.0, 0.0)]
     elif wtype == "cos2pi":
@@ -285,16 +351,27 @@ def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
         wtable = [float(randint(-1, 1)) for i in range(size / randint(2, 12))]
         wtable.extend([0.0 for i in range(size - len(wtable))])
     elif wtype == "vary":
-        btable = [ [wave_types[randint(0, len(wave_types)-1)], rand(lowval, highval)] for i in range(randint(10, 60)) ]
-        wtable = breakpoint(btable, size, highval, lowval) 
+        if size < 32:
+            bsize = size
+        else:
+            bsize = size / randint(2, 16)
+
+        btable = [ [wave_types[randint(0, len(wave_types)-1)], rand(lowval, highval)] for i in range(bsize) ]
+
+        if len(btable) > 0:
+            btable[0] = lowval
+        else:
+            btable = [lowval]
+
+        wtable = breakpoint(btable, size) 
     elif wtype == "flat":
         wtable = [highval for i in range(size)]
     
     return wtable
 
 def frange(steps, highval=1.0, lowval=0.0):
-    if steps < 2:
-        steps = 3 
+    if steps == 1:
+        return [lowval]
 
     return  [ (i / float(steps-1)) * (highval - lowval) + lowval for i in range(steps)]
         
@@ -323,7 +400,7 @@ def log(message, mode="a"):
     logfile.write(str(message) + "\n")
     return logfile.close()
 
-def fill(string, length):
+def fill(string, length, chans=2):
     if flen(string) < length:
         repeats = length / flen(string) + 1
         string = string * repeats
@@ -351,7 +428,7 @@ def mix(layers, leftalign=True, boost=2.0):
 
         if len(layer) != ftc(output_length) or len(out) != ftc(output_length):
             dif = int(math.fabs(len(layer) - len(out)))
-            print 'unequal', dif
+            log('unequal'+str(dif))
             if len(out) < len(layer):
                 layer = layer[:len(layer) - dif]
             else:
@@ -374,6 +451,23 @@ def pad(string, start, end):
 
     return "%s%s%s" % ((start * zero), string, (end * zero))
 
+def iscrossing(first, second):
+    """ Detects zero crossing between two mono frames """
+
+    if len(first) == 2 and len(second) == 2:
+        first = struct.unpack("<h", first) 
+        second = struct.unpack("<h", second) 
+
+        if first[0] > 0 and second[0] < 0:
+            return True
+        elif first[0] < 0 and second[0] > 0:
+            return True
+        elif first[0] == 0 and second[0] != 0:
+            return False 
+        elif first[0] != 0 and second[0] == 0:
+            return True 
+
+    return False
 
 def amp(string, scale):
     return audioop.mul(string, audio_params[1], scale)
@@ -421,13 +515,17 @@ def htf(hz):
     return int(frames)
 
 def timestamp_filename():
+    """ Generate a datetime string to add to filenames """
     current_time = str(datetime.time(datetime.now()))
-    current_time = string.replace(current_time, ":", ".")
+    current_time = current_time.split(':')
+    current_seconds = current_time[2].split('.')
+    current_time = current_time[0] + '.' + current_time[1] + '.' + current_seconds[0]
     current_date = str(datetime.date(datetime.now()))
 
-    return current_date + "_" + current_time + "_"
+    return current_date + "_" + current_time
 
 def write(audio_string, filename, timestamp = True, dirname="renders"):
+    """ Write audio data to renders directory with the Python wave module """
     if timestamp == True:
         filename = dirname + '/' + filename + '-' + timestamp_filename() + '.wav' 
     else:
@@ -439,6 +537,8 @@ def write(audio_string, filename, timestamp = True, dirname="renders"):
     return filename
 
 def read(filename):
+    """ Read a 44.1k / 16bit WAV file from disk with the Python wave module. 
+        Mono files are converted to stereo automatically. """
     filename = snddir + filename
     print 'loading', filename
 
@@ -458,15 +558,6 @@ def read(filename):
     snd.data = file_frames
 
     return snd
-
-def spread(packets, width = (1, 1), prob = 0.5):
-    packets = [pan(p, (width[0] * rand(), width[1] * rand()), probability(prob)) for p in packets]
-
-    return packets
-
-def probability(prob):
-    # returns weighted random boolean 
-    return rand() > prob
 
 def insert_into(haystack, needle, position):
     # split string at position index
@@ -491,20 +582,55 @@ def cut(string, start, length):
 
     return string[start : start + length]
 
-def check_string(string):
-    # Check to see if the input string divides evenly by the byte width
-    if len(string) % audio_params[1] * audio_params[0] > 0:
-        print 'dsp.split(): your string is probably fucked up. check your math.'
+def mixstereo(chans):
+    """ mix a list of two mono sounds into a stereo sound """
+    chans[0] = audioop.tostereo(chans[0], audio_params[1], 1, 0)
+    chans[1] = audioop.tostereo(chans[1], audio_params[1], 0, 1)
 
-def split(string, size):
-    # size is given in frames (aka samples)
+    return mix(chans)
 
-    # Multiply the number of frames we want by the current byte width
-    frames = int(size) * audio_params[1] * audio_params[0]
+def splitmono(string):
+    """ split a stereo sound into a list of mono sounds """
+    left = audioop.tomono(string, audio_params[1], 1, 0)
+    right = audioop.tomono(string, audio_params[1], 0, 1)
 
-    check_string(string)
+    return [left, right] 
 
-    return [string[frames * count : (frames * count) + frames] for count in range(len(string) / frames)]
+def split(string, size, chans=2):
+    """ split a sound into chunks of size N in frames, or by zero crossings """
+    if size == 0:
+        if chans == 2:
+            # split into mono files
+            tracks = splitmono(string)
+
+            for i, track in enumerate(tracks):
+                tracks[i] = split(track, 0, 1)
+
+            return tracks
+
+        elif chans == 1:
+            frames = split(string, 1, 1)
+            chunk, chunks = [], []
+
+            for i, frame in enumerate(frames):
+                try:
+                    if chunk == []:
+                        chunk += [ frame ]
+                    elif iscrossing(frame, frames[i+1]) == False and chunk != []:
+                        chunk += [ frame ]
+                    elif iscrossing(frame, frames[i+1]) == True and chunk != []:
+                        chunk += [ frame ]
+                        chunks += [ ''.join(chunk) ]
+                        chunk = []
+                except IndexError:
+                    chunk += [ frame ]
+                    chunks += [ ''.join(chunk) ]
+
+            return chunks
+
+    elif size > 0:
+        frames = int(size) * audio_params[1] * chans 
+        return [string[frames * count : (frames * count) + frames] for count in range(len(string) / frames)]
 
 def vsplit(input, minsize, maxsize):
     # min/max size is in frames...
@@ -519,28 +645,11 @@ def vsplit(input, minsize, maxsize):
 
     return output
 
-def walk(snd_flen, range=(0,1), position=(0,10)):
-    start = snd_flen * float(range[0])
-    end = snd_flen * float(range[1])
-
-    pos = float(position[0]) / float(position[1])
-
-    pos *= end - start
-    pos += start
-
-    #print '    walk!', range, position, pos
-
-    return int(pos)
-
 def bpm2ms(bpm):
     return 60000.0 / float(bpm)
 
 def bpm2frames(bpm):
     return int((bpm2ms(bpm) / 1000.0) * audio_params[2]) 
-
-def argr(args, k, v):
-    args[k] = v
-    return args
 
 def pantamp(pan_pos):
     # Translate the pan position into a tuple size two of left amp and right amp
@@ -590,11 +699,6 @@ def panenv(sound, ptype='line', etype='sine', panlow=0.0, panhigh=1.0, envlow=0.
     packets = [pan(p, ptable[i], etable[i]) for i, p in enumerate(packets)]
 
     return ''.join(packets)
-
-def rangetowidth(low, high):
-    width = high - low
-    width += low
-    return width
 
 def pulsar(sound, freq=(1.0, 1.01, 'random'), amp=(0.0, 1.0, 'random'), pan_pos=0.5):
     slices = split(sound, dsp_grain)
