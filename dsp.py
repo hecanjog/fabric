@@ -12,6 +12,7 @@ import struct
 import string
 import time
 import hashlib
+import subprocess
 from datetime import datetime
 
 audio_params = [2, 2, 44100, 0, "NONE", "not_compressed"]
@@ -23,6 +24,10 @@ thetime = 0
 seedint = 0
 seedstep = 0
 seedhash = ''
+
+def play(sound):
+    aplay = subprocess.Popen(["aplay"], stdin=sound)
+    return aplay.communicate()[0]
 
 def lget(list, index, default=True):
     """ Safely return a selected element from a list and handle IndexErrors """
