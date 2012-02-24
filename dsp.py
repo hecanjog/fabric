@@ -13,6 +13,7 @@ import string
 import time
 import hashlib
 import subprocess
+import os
 from datetime import datetime
 
 audio_params = [2, 2, 44100, 0, "NONE", "not_compressed"]
@@ -24,10 +25,6 @@ thetime = 0
 seedint = 0
 seedstep = 0
 seedhash = ''
-
-def play(sound):
-    aplay = subprocess.Popen(["aplay"], stdin=sound)
-    return aplay.communicate()[0]
 
 def lget(list, index, default=True):
     """ Safely return a selected element from a list and handle IndexErrors """
@@ -524,7 +521,7 @@ def timestamp_filename():
 
     return current_date + "_" + current_time
 
-def write(audio_string, filename, timestamp = True, dirname="renders"):
+def write(audio_string, filename, timestamp=True, dirname="renders"):
     """ Write audio data to renders directory with the Python wave module """
     if timestamp == True:
         filename = dirname + '/' + filename + '-' + timestamp_filename() + '.wav' 
@@ -535,6 +532,17 @@ def write(audio_string, filename, timestamp = True, dirname="renders"):
     wavfile.writeframes(audio_string)
     wavfile.close()
     return filename
+
+def cache(s='', clear=False):
+    """ Simple write() wrapper to create and clear cache audio """
+    if clear == True:
+        files = os.listdir('renders/cache/')
+        for file in files:
+            os.remove('renders/cache/' + file)
+    else:
+        return write(s, 'cache/c', True)
+
+    return s 
 
 def read(filename):
     """ Read a 44.1k / 16bit WAV file from disk with the Python wave module. 
@@ -558,6 +566,15 @@ def read(filename):
     snd.data = file_frames
 
     return snd
+
+def play(out=''):
+    """ A silly alsa-dependent hack to enable another silly hack """
+    shhh = open(os.devnull, 'w')
+    filename = cache(out)
+    p = subprocess.Popen(['aplay', '-f', 'cd', filename], shell=False, stdout=shhh, stderr=shhh)
+    shhh.close()
+
+    return out
 
 def insert_into(haystack, needle, position):
     # split string at position index
