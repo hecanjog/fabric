@@ -1,11 +1,4 @@
-#!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
-
-import fabric.fabric as dsp
-import random
-import audioop 
-import math
-import sys
+import dsp
 
 def main(out=''):
     s = """recently
@@ -35,7 +28,7 @@ def main(out=''):
     for t in timings:
         out += score.section(t)
 
-    out = dsp.write(out, s, True)
+    out = dsp.write(out, 'william', True)
 
     out += dsp.env(score.sines(dsp.stf(dsp.randint(2, 8))), 'vary')
 
