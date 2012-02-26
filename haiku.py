@@ -1,24 +1,29 @@
 import dsp
 
 dsp.timer('start')
-dsp.seed('gathering')
+dsp.seed('inter')
 
-# Gathering toward 
+# I read an interview with Ligeti last night discussing rhythm 
 
 etypes = ['line', 'sine', 'gauss', 'phasor', 'cos']
+curve = dsp.wavetable('sine', 100)
+lengths = [dsp.mstf(100) + (i * dsp.mstf(100)) for i in curve]
 
-def stream(partial):
-    around = dsp.pulsar(dsp.tone(dsp.stf(20), 444 * partial))
-    around = dsp.split(around, 0, 2)
+sines = []
+for length in lengths:
+    tone = dsp.tone(int(length), 222 + 77 * dsp.randint(77), 'sine2pi', 0.4)
+    tone = dsp.env(tone, dsp.randchoose(etypes), True)
+    tone = dsp.pan(tone, dsp.rand())
+    sines += [ tone ]
 
-    within = dsp.tone(dsp.stf(20), 444 * (1.0 / partial))
-    within = dsp.split(within, 0, 2)
+sines = [[sine] * 10 for sine in sines]
+combine = ['' for i in range(10)]
 
-    together = [''.join(dsp.interleave(around[i], within[i])) for i in range(2)]
+for sine in sines:
+    for snum, ss in enumerate(sine):
+        combine[snum] += ss * dsp.randint(1, 3)
 
-    return dsp.env(dsp.mixstereo(together), dsp.randchoose(etypes))
+out = dsp.mix(combine)
 
-out = dsp.mix([stream(i) for i in range(1,7)])
-
-print dsp.write(out, 'haiku-12-02-25-gathering', False)
+print dsp.write(out, 'haiku-12-02-26-inter', False)
 dsp.timer('stop')
