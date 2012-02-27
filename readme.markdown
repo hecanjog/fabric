@@ -14,6 +14,9 @@ so this one has things in it that resemble rhythm from time to time.
 'Goat formants' is for william the goat and is mostly manipulations of 
 a recording of his goat voice.
 
+Download the source code here if you haven't already:
+https://github.com/downloads/hecanjog/fabric/hecanjog-pocketsuite.zip
+
 To generate the music, first make sure you have the recording 
 of william the goat making his goat sounds:
 
