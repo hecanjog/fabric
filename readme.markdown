@@ -1,6 +1,6 @@
 #Pocket Suite by He Can Jog
 ##A collection of python scores for the Pocket Fields netlabel.
-###Fall 2011 - Spring 2012 (CC) BY-NC-SA
+###Fall 2011 - Winter 2012 (CC) BY-NC-SA
 
 This music is generated with a system I'm working on in the python
 programming language called 'fabric'. Fabric is a work in progress, 
