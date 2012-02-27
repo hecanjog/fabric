@@ -1,29 +1,38 @@
 import dsp
 
 dsp.timer('start')
-dsp.seed('inter')
+dsp.seed('alter')
 
-# I read an interview with Ligeti last night discussing rhythm 
+# Alternating
+#
+# Violin by Meg Karls
+# http://sounds.hecanjog.com/violin-e.wav
 
-etypes = ['line', 'sine', 'gauss', 'phasor', 'cos']
-curve = dsp.wavetable('sine', 100)
-lengths = [dsp.mstf(100) + (i * dsp.mstf(100)) for i in curve]
+blocks = 100
+violin = dsp.read('sounds/violin-e.wav')
+curve = dsp.wavetable('vary', blocks)
+lengths = [dsp.mstf(10) + (i * dsp.mstf(30)) for i in curve]
 
-sines = []
-for length in lengths:
-    tone = dsp.tone(int(length), 222 + 77 * dsp.randint(77), 'sine2pi', 0.4)
-    tone = dsp.env(tone, dsp.randchoose(etypes), True)
-    tone = dsp.pan(tone, dsp.rand())
-    sines += [ tone ]
+violins = dsp.split(violin.data, dsp.flen(violin.data) / blocks)
 
-sines = [[sine] * 10 for sine in sines]
-combine = ['' for i in range(10)]
+for i, violin in enumerate(violins):
+    ppos = dsp.rand()
+    violin = dsp.split(violin, lengths[i])
+    violin = [dsp.env(v, 'sine', True) for v in violin]
 
-for sine in sines:
-    for snum, ss in enumerate(sine):
-        combine[snum] += ss * dsp.randint(1, 3)
+    if i % 3 == 0:
+        violin = [v for v in reversed(violin)]
 
-out = dsp.mix(combine)
+    if i % 5 == 0:
+        violin = [dsp.pad(v, 0, int(lengths[i] * 0.5)) for v in violin]
 
-print dsp.write(out, 'haiku-12-02-26-inter', False)
+    violins[i] = [dsp.pan(v, ppos) for v in violin]
+
+combine = [] 
+for vi, violin in enumerate(violins):
+    combine = dsp.interleave(violin, combine)
+
+out = ''.join(combine)
+
+print dsp.write(out, 'haiku-12-02-27-alter', False)
 dsp.timer('stop')
