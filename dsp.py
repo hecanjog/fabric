@@ -12,9 +12,11 @@ import struct
 import string
 import time
 import hashlib
+import subprocess
+import os
 from datetime import datetime
 
-audio_params = (2, 2, 44100, 0, "NONE", "not_compressed") 
+audio_params = [2, 2, 44100, 0, "NONE", "not_compressed"]
 snddir = '' 
 dsp_grain = 64
 env_min = 2 
@@ -118,9 +120,9 @@ def timer(cmd='start'):
 def transpose(audio_string, amount):
     """ Transpose an audio fragment by a given amount.
         1.0 is unchanged, 0.5 is half speed, 2.0 is twice speed, etc """
-    amount = 1.0 / amount
+    amount = 1.0 / float(amount)
 
-    audio_string = audioop.ratecv(audio_string, 2, 2, 44100, int(44100 * amount), None)
+    audio_string = audioop.ratecv(audio_string, audio_params[1], audio_params[0], audio_params[2], int(audio_params[2] * amount), None)
     
     return audio_string[0]
 
@@ -395,7 +397,7 @@ def log(message, mode="a"):
     logfile.write(str(message) + "\n")
     return logfile.close()
 
-def fill(string, length):
+def fill(string, length, chans=2):
     if flen(string) < length:
         repeats = length / flen(string) + 1
         string = string * repeats
@@ -423,7 +425,7 @@ def mix(layers, leftalign=True, boost=2.0):
 
         if len(layer) != ftc(output_length) or len(out) != ftc(output_length):
             dif = int(math.fabs(len(layer) - len(out)))
-            print 'unequal', dif
+            log('unequal'+str(dif))
             if len(out) < len(layer):
                 layer = layer[:len(layer) - dif]
             else:
@@ -453,10 +455,14 @@ def iscrossing(first, second):
         first = struct.unpack("<h", first) 
         second = struct.unpack("<h", second) 
 
-        if first[0] >= 0 and second[0] <= 0:
+        if first[0] > 0 and second[0] < 0:
             return True
-        elif first[0] <= 0 and second[0] >= 0:
+        elif first[0] < 0 and second[0] > 0:
             return True
+        elif first[0] == 0 and second[0] != 0:
+            return False 
+        elif first[0] != 0 and second[0] == 0:
+            return True 
 
     return False
 
@@ -515,7 +521,7 @@ def timestamp_filename():
 
     return current_date + "_" + current_time
 
-def write(audio_string, filename, timestamp = True, dirname="renders"):
+def write(audio_string, filename, timestamp=True, dirname="renders"):
     """ Write audio data to renders directory with the Python wave module """
     if timestamp == True:
         filename = dirname + '/' + filename + '-' + timestamp_filename() + '.wav' 
@@ -526,6 +532,17 @@ def write(audio_string, filename, timestamp = True, dirname="renders"):
     wavfile.writeframes(audio_string)
     wavfile.close()
     return filename
+
+def cache(s='', clear=False):
+    """ Simple write() wrapper to create and clear cache audio """
+    if clear == True:
+        files = os.listdir('renders/cache/')
+        for file in files:
+            os.remove('renders/cache/' + file)
+    else:
+        return write(s, 'cache/c', True)
+
+    return s 
 
 def read(filename):
     """ Read a 44.1k / 16bit WAV file from disk with the Python wave module. 
@@ -549,6 +566,15 @@ def read(filename):
     snd.data = file_frames
 
     return snd
+
+def play(out=''):
+    """ A silly alsa-dependent hack to enable another silly hack """
+    shhh = open(os.devnull, 'w')
+    filename = cache(out)
+    p = subprocess.Popen(['aplay', '-f', 'cd', filename], shell=False, stdout=shhh, stderr=shhh)
+    shhh.close()
+
+    return out
 
 def insert_into(haystack, needle, position):
     # split string at position index

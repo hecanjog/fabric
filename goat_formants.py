@@ -1,7 +1,4 @@
-#!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
-
-import fabric.fabric as dsp
+import dsp
 
 def main(out=''):
     """ www.hecanjog.com :: (cc) by-nc-sa """

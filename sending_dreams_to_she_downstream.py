@@ -1,7 +1,4 @@
-#!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
-
-import fabric.fabric as dsp
+import dsp
 
 def main(out='', layers=[]):
     """ www.hecanjog.com :: title taken from a poem by wc tank :: (cc) by-nc-sa """
