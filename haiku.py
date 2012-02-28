@@ -1,38 +1,24 @@
 import dsp
 
 dsp.timer('start')
-dsp.seed('alter')
+dsp.seed('empire builder')
 
-# Alternating
-#
-# Violin by Meg Karls
-# http://sounds.hecanjog.com/violin-e.wav
+# Pulse trains in Minnesota
 
-blocks = 100
-violin = dsp.read('sounds/violin-e.wav')
-curve = dsp.wavetable('vary', blocks)
-lengths = [dsp.mstf(10) + (i * dsp.mstf(30)) for i in curve]
+def pulsetrain(numpulses):
+    impulse = dsp.byte_string(32767) * 2 
+    maxlength = dsp.randint(1000, 2000)
 
-violins = dsp.split(violin.data, dsp.flen(violin.data) / blocks)
+    lengths = dsp.wavetable('cos', numpulses)
+    lengths = [int(i * maxlength) for i in lengths]
+    pulses = [dsp.pan(impulse, dsp.rand()) for i in range(numpulses)]
+    pulses = [dsp.pad(pulse, 0, lengths[i]) for i, pulse in enumerate(pulses)]
 
-for i, violin in enumerate(violins):
-    ppos = dsp.rand()
-    violin = dsp.split(violin, lengths[i])
-    violin = [dsp.env(v, 'sine', True) for v in violin]
+    pulses = ''.join(pulses)
 
-    if i % 3 == 0:
-        violin = [v for v in reversed(violin)]
+    return pulses
 
-    if i % 5 == 0:
-        violin = [dsp.pad(v, 0, int(lengths[i] * 0.5)) for v in violin]
+out = dsp.mix([pulsetrain(10000) for i in range(10)], False)
 
-    violins[i] = [dsp.pan(v, ppos) for v in violin]
-
-combine = [] 
-for vi, violin in enumerate(violins):
-    combine = dsp.interleave(violin, combine)
-
-out = ''.join(combine)
-
-print dsp.write(out, 'haiku-12-02-27-alter', False)
+print dsp.write(out, 'haiku-12-02-28-empire-builder', False)
 dsp.timer('stop')
