@@ -1,5 +1,0 @@
-renders/*
-sounds/bball/*
-sounds/cv/*
-sounds/reber/r3/*
-sounds/violin-all.wav
