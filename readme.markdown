@@ -1,19 +1,19 @@
-# Fabric 0
-
 Fabric is a computer music system written with the Python v2.x standard library.
 It is intended to be used for offline/non-realtime computer music composition. 
 
 It aims to be highly portable, hackable, understandable and powerful. 
-Fabric aspires to one day be the Logo of computer music. No big deal!
+
+Documentation is sparse at the moment, but you can check out the example score.py 
+script for an overview of some features.
 
 The system currently implements simple wavetable synthesis and provides tools for
 processing sound in the time domain. Frequency domain tools may be added if the 
 author learns how that darn FFT works, or when support for pluggable DSP engines 
 is implemented in version 3.
 
-# Fabric Roadmap
+## Fabric Roadmap
 
-## Version 1
+### Version 1
 
 - Full test coverage
 - Standardized install process
@@ -25,7 +25,7 @@ is implemented in version 3.
     - Rendering
 - All methods w/at least stub docstring description
 
-## Version 2
+### Version 2
 
 - Optimize codebase (find speed bottlenecks and eliminate where possible)
 - Fully document source
@@ -36,18 +36,18 @@ is implemented in version 3.
 - Expand synthesis capabilities: FM, etc
 - Expand 'high level' functionality: compression, reverb?
 
-## Version 3
+### Version 3
 
 - First integration with Sugar environment
 - Explore csound backend and experimental realtime capabilities
 - Explore plugin system for modular synthesis engines (libpd, csound, supercollider, etc)
 
-## Version 4
+### Version 4
 
 - Feature complete Sugar integration, GUI environment and render workflow
 - Scaffold for ports of Sugar GUI to native Windows/Mac/Linux/Mobile apps
 
-## Version 5
+### Version 5
 
 - API freeze
 - Full lesson plans for the following age groups:
@@ -61,4 +61,3 @@ is implemented in version 3.
     - Full Sugar package
     - Bootable distro
     - Web-based service running on EC2?
-
