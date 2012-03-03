@@ -128,7 +128,15 @@ def transpose(audio_string, amount):
 
 def byte_string(number):
     """ Return integer encoded as bytes formatted for wave data """
+    number = cap(number, 32767, -32768)
     return struct.pack("<h", number)
+
+def pack(number):
+    """ wrapper for byte_string that takes -1.0 to 1.0 as input """
+    number = cap(number, 1.0, -1.0)
+    number = (number + 1.0) * 0.5
+    number = number * 65535 - 32768
+    return byte_string(int(number))
 
 def tone(length=44100, freq=440, wavetype='sine2pi', amp=1.0, blocksize=0):
     cyclelen = htf(freq * 0.99)
@@ -169,7 +177,7 @@ def noise(length):
 
 def cycle(freq, wavetype='sine2pi', amp=1.0):
     wavecycle = wavetable(wavetype, htf(freq))
-    return ''.join([byte_string(cap(amp * s * 32767, 32767, -32768)) * audio_params[0] for s in wavecycle])
+    return ''.join([pack(amp * s) * audio_params[0] for s in wavecycle])
 
 def scale(low_target, high_target, low, high, pos):
     pos = float(pos - low) / float(high - low) 
