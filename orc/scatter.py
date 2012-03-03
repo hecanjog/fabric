@@ -11,10 +11,7 @@ if len(args) > 1:
     notes = int(args[1])
 
 if len(args) > 2:
-    fixed = False
-
-if fixed:
-    dsp.seed('fixed')
+    dsp.seed(args[2])
 
 violin = dsp.read('sounds/violin-d.wav')
 vlen = dsp.flen(violin.data)
