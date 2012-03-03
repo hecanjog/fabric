@@ -11,7 +11,10 @@ def main(out=''):
     concentically ripple-sliding in fractalized
     friction like windchime moans
     predetermining escapes to overlapping
-    internally fictional colour landscapes"""
+    internally fictional colour landscapes
+    
+    wc tank 
+    """
 
     dsp.seed(s)
     dsp.timer('start')
