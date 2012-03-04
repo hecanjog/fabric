@@ -1,24 +1,37 @@
 import dsp
 
 dsp.timer('start')
-dsp.seed('beed')
+dsp.seed('pizza')
 
-# Neat!
+# Something of a drone
 
-def bee(tonic, out=''):
-    t = dsp.stf(20) / dsp.htf(tonic);
-    s = dsp.wavetable('line', t)
-    wtable = dsp.wavetable('sine2pi', dsp.htf(tonic))
-    div = dsp.randint(100, 1000)
+def pizza(freq, out=[]):
+    frames = dsp.stf(60)
+    pwtable = dsp.wavetable('line', frames)
+    cwidth = dsp.htf(freq)
 
-    for i in range(t):
-        fp = (i % div) * 0.1 + 0.0001
-        out += ''.join([dsp.pack(0.4 * f + (s[i] / (f + fp))) * 2 for f in wtable])
+    print 'start pizza'
 
-    return out
+    def cook(f):
+        plen = int(cwidth * 0.75 * pwtable[f])
+        slen = cwidth - plen
 
-out = dsp.mix([bee(100 * i) for i in range(1, 10)], False)
+        ptable = dsp.wavetable('phasor', plen)
 
-print dsp.write(out, 'haiku-12-03-03-beed', False)
+        cpos = f % cwidth
+
+        if cpos < plen:
+            f = dsp.pack(ptable[cpos] - 0.5) * 2
+        else:
+            f = dsp.pack(0) * 2
+            
+        return f
+
+    return ''.join([cook(f) for f in range(frames)])
+
+out = dsp.mix([pizza(30 * i) for i in range(1, 7)])
+
+
+print dsp.write(out, 'haiku-12-03-04-pizza', False)
 dsp.timer('stop')
 
