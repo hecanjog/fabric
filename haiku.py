@@ -1,37 +1,39 @@
 import dsp
 
 dsp.timer('start')
-dsp.seed('pizza')
+dsp.seed('avian')
 
-# Something of a drone
+birds = dsp.read('sounds/nsong.wav')
+birds = dsp.split(birds.data, dsp.stf(10)) * 2 
+birds = birds[:15]
 
-def pizza(freq, out=[]):
-    frames = dsp.stf(60)
-    pwtable = dsp.wavetable('line', frames)
-    cwidth = dsp.htf(freq)
+guitar = dsp.read('sounds/cguitar.wav')
 
-    print 'start pizza'
+def gcut(guitar, i):
+    g = dsp.cut(guitar, dsp.stf(i * 0.1 + 0.6), dsp.stf(i * 0.1 + 0.1))
+    g = dsp.fill(g, dsp.stf(250))
+    g = dsp.pan(g, dsp.rand())
+    g = dsp.env(g, 'vary')
 
-    def cook(f):
-        plen = int(cwidth * 0.75 * pwtable[f])
-        slen = cwidth - plen
+    return g
 
-        ptable = dsp.wavetable('phasor', plen)
+guitar = dsp.mix([gcut(guitar.data, i) for i in range(100)], True, 30.0)
+guitar = dsp.split(guitar, dsp.flen(guitar) / 3)
+guitar = dsp.env(guitar[0], 'line') + guitar[1] + dsp.env(guitar[2], 'phasor')
 
-        cpos = f % cwidth
+def sing(bird):
+    bird = dsp.split(bird, dsp.mstf(dsp.randint(1, 200)))
+    bird = [dsp.pan(b, dsp.rand()) for b in bird]
+    bird = [dsp.env(b, 'random') for b in bird]
+    bird = [dsp.amp(b, dsp.rand()) for b in bird]
+    bird = ''.join(dsp.interleave(dsp.randshuffle(bird), bird))
+    bird = dsp.env(bird, 'vary')
 
-        if cpos < plen:
-            f = dsp.pack(ptable[cpos] - 0.5) * 2
-        else:
-            f = dsp.pack(0) * 2
-            
-        return f
+    return bird
 
-    return ''.join([cook(f) for f in range(frames)])
+birds = ''.join([sing(bird) for bird in birds])
 
-out = dsp.mix([pizza(30 * i) for i in range(1, 7)])
+out = dsp.mix([dsp.amp(birds, 0.5), dsp.pad(guitar, 0, dsp.stf(5))], False)
 
-
-print dsp.write(out, 'haiku-12-03-04-pizza', False)
+print dsp.write(out, 'haiku-12-03-05-avian', False)
 dsp.timer('stop')
-
