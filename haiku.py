@@ -1,52 +1,27 @@
 import dsp
 
 dsp.timer('start')
-dsp.seed('Avian')
+dsp.seed('bell')
 
-birds = dsp.read('sounds/nsong.wav')
-birds = dsp.split(birds.data, dsp.stf(10)) * 2 
-birds = birds[:12]
+guitar = dsp.read('sounds/hcj.samples.tones/tape220.wav')
 
-guitar = dsp.read('sounds/cguitar.wav')
+scale = [1.0, 1.125, 1.250, 1.333, 1.5, 1.667]
+gamut = [s * octave * 0.5 for s in scale for octave in range(1, 6)] + [5.0]
+gamut.sort()
+gamut = [dsp.transpose(guitar.data, s) for s in gamut]
+tonic = dsp.cut(gamut[0], 0, dsp.mstf(300))
 
-def gcut(guitar, i, j=0):
-    etypes = ['sine', 'line', 'phasor', 'tri']
-    etypes += ['sine' for e in range(10)]
+def ding(wlen, out=''):
+    wave = [int(w * wlen) for w in dsp.wavetable('tri', wlen)]
 
-    t = dsp.stf(dsp.rand(20, 230))
-    if t < dsp.stf(160):
-        j = 20 * i
-        if j % 3 == 0:
-            guitar = dsp.amp(guitar, dsp.rand(1.0, 6.0))
+    for i in range(50):
+        i = dsp.cut(gamut[i * wave[i % len(wave)] % len(gamut)], dsp.mstf(dsp.rand(0, 1000)), dsp.mstf(100))
+        i = dsp.pan(i, dsp.rand())
+        out += i
 
-    g = dsp.cut(guitar, dsp.stf((i + j) * 0.005 + 0.6), dsp.stf(i * 0.03 + 0.01))
-    g = dsp.fill(g, t)
-    g = dsp.split(g, dsp.flen(g) / dsp.randint(2, 32))
-    g = [dsp.pan(s, dsp.rand()) for s in g]
-    g = [dsp.env(s, dsp.randchoose(etypes)) for s in g]
-    g = [dsp.amp(s, dsp.rand(0.05, 3.0)) for s in g]
-    g = [dsp.pad(s, dsp.randint(0, t / 3), dsp.randint(0, t / 3)) for s in g]
-    g = dsp.fill(''.join(g), t)
+    return out
 
-    return g
+out = ''.join([tonic + ding(i) for i in range(1, 16)])
 
-guitar = dsp.mix([gcut(guitar.data, i) for i in range(150)], False, 20.0)
-guitar = dsp.split(guitar, dsp.flen(guitar) / 3)
-guitar = dsp.env(guitar[0], 'line') + guitar[1] + dsp.env(guitar[2], 'phasor')
-
-def sing(bird):
-    bird = dsp.split(bird, dsp.mstf(dsp.randint(1, 200)))
-    bird = [dsp.pan(b, dsp.rand()) for b in bird]
-    bird = [dsp.env(b, 'random') for b in bird]
-    bird = [dsp.amp(b, dsp.rand()) for b in bird]
-    bird = ''.join(dsp.interleave(dsp.randshuffle(bird), bird))
-    bird = dsp.env(bird, 'vary')
-
-    return bird
-
-birds = ''.join([sing(bird) for bird in birds])
-
-out = dsp.mix([dsp.amp(birds, 0.5), dsp.pad(guitar, 0, dsp.stf(5))], False)
-
-print dsp.write(out, 'haiku-12-03-05-avian', False)
+print dsp.write(out, 'haiku-12-03-09-bell', False)
 dsp.timer('stop')
