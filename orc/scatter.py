@@ -2,7 +2,6 @@ import dsp
 import time
 import sys
 
-fixed = True
 notes = 1
 
 args = [arg for arg in sys.argv if arg != '']
