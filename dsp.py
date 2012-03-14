@@ -703,17 +703,24 @@ def pan(slice, pan_pos=0.5, amp=1.0):
     slice = audioop.add(lslice, rslice, audio_params[1])
     return audioop.mul(slice, audio_params[1], amp)
 
-def env(audio_string, wavetable_type="sine", fullres=False):
+def env(audio_string, wavetable_type="sine", fullres=False, highval=1.0, lowval=0.0):
     # Very short envelopes are possible...
     if flen(audio_string) < dsp_grain * 4 or fullres == True:
         packets = split(audio_string, 1)
     else:
         packets = split(audio_string, dsp_grain)
 
-    wtable = wavetable(wavetable_type, len(packets))
+    wtable = wavetable(wavetable_type, len(packets), highval, lowval)
     packets = [audioop.mul(packet, audio_params[1], wtable[i]) for i, packet in enumerate(packets)]
 
     return ''.join(packets) 
+
+def benv(sound, points):
+    chunksize = flen(sound) / (len(points) - 1)
+    sounds = split(sound, chunksize, audio_params[0])
+
+    return ''.join([env(s, 'line', points[i + 1], points[i]) for i, s in enumerate(sounds)])
+        
 
 def panenv(sound, ptype='line', etype='sine', panlow=0.0, panhigh=1.0, envlow=0.0, envhigh=1.0):
     packets = split(sound, dsp_grain)
