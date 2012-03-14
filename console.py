@@ -1,6 +1,8 @@
 import cmd
 import subprocess
 import os
+import dsp
+import sounds
 
 class Fabric(cmd.Cmd):
     prompt = 'fabric: '

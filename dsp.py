@@ -584,6 +584,21 @@ def play(out=''):
 
     return out
 
+def delay(s):
+    """ A wrapper for time.sleep() - input seconds as floats """
+    time.sleep(s)
+
+def stream(outs=['']):
+    shhh = open(os.devnull, 'w')
+
+    for out in outs:
+        filename = cache(out)
+        p = subprocess.Popen(['aplay', '-f', 'cd', filename], shell=False, stdout=shhh, stderr=shhh)
+
+    shhh.close()
+
+    return outs
+
 def insert_into(haystack, needle, position):
     # split string at position index
     hay = cut(haystack, 0, position)
