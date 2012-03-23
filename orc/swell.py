@@ -1,55 +1,57 @@
 import dsp
-import time
-import sys
+import wes
 
-scale = [1.0, 1.125, 1.25, 1.333, 1.5, 1.667, 1.875, 2.0]
-freqs = [1,3,5]
-octave_range = [4, 4]
-pre = []
-length = dsp.stf(3)
-reps = 1
-prerender = False
+def play(args):
+    freqs = [1,3,5]
+    octave =3 
+    pre = []
+    length = dsp.stf(1)
+    reps = 1
+    volume = 1
+    sounds = args.pop(0) 
+    sounds = [sounds.va.data, sounds.vb.data, sounds.vc.data, sounds.vd.data, sounds.ve.data, sounds.vf.data, sounds.vg.data]
+    violin = ''
 
-args = [arg for arg in sys.argv if arg != '']
+    for arg in args:
+        a = arg.split(':')
 
-for arg in args:
-    a = arg.split(':')
+        if a[0] == 'f':
+            freqs = a[1].split('.')
+            freqs = [int(f) for f in freqs]
 
-    if a[0] == 'f':
-        freqs = a[1].split('.')
-        freqs = [int(f) for f in freqs]
+        if a[0] == 'o':
+            octave = float(a[1])
+            
+        if a[0] == 't':
+            length = dsp.stf(float(a[1]))
 
-    if a[0] == 'o':
-        octave_range = a[1].split('.')
-        octave_range = [float(o) for o in octave_range]
-    
-    if a[0] == 'l':
-        length = dsp.stf(float(a[1]))
+        if a[0] == 'r':
+            reps = int(a[1])
 
-    if a[0] == 'r':
-        reps = int(a[1])
+        if a[0] == 'p':
+            prerender = True
 
-    if a[0] == 'p':
-        prerender = True
+        if a[0] == 'v':
+            volume = float(a[1]) / 100.0
 
+        if a[0] == 's':
+            violin = sounds[ord(a[1]) - 97]
 
-violin = dsp.read('sounds/violin-c.wav')
-violin = [dsp.cut(violin.data, dsp.randint(0, 44100), length)]
+    freqs = [wes.scale[i - 1] * ( octave / 4.0 ) for i in freqs]
 
-freqs = [scale[i - 1] * ( dsp.rand(octave_range[0], octave_range[1]) / 4.0 ) for i in freqs]
+    dsp.dsp_grain *= 4
+    line = wes.readline()
 
-dsp.dsp_grain *= 4
+    for word in line: 
+        vstart = int(wes.rword(word) * 44100)
+        if violin == '':
+            violin = sounds[int(wes.rword(word) * (len(sounds)-1))]
+        v = dsp.cut(violin, vstart, length / len(line))
+        v = dsp.mix([dsp.fill(dsp.transpose(v, f), length / len(line)) for f in freqs])
+        v = dsp.env(v, 'sine', False, volume)
 
-for i,v in enumerate(violin): 
-
-    v = dsp.mix([dsp.fill(dsp.transpose(v, f), length) for f in freqs])
-    v = dsp.env(v, 'sine')
-
-    v *= reps
-    
-    if prerender == True:
-        pre += [ dsp.cache(v) ]
-    else:
+        v *= reps
+            
         dsp.play(v)
 
-dsp.dsp_grain /= 4
+    dsp.dsp_grain /= 4
