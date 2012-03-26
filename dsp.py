@@ -13,7 +13,10 @@ import string
 import time
 import hashlib
 import subprocess
+from multiprocessing import Process, Queue 
 import os
+import sys
+import cStringIO
 from datetime import datetime
 
 audio_params = [2, 2, 44100, 0, "NONE", "not_compressed"]
@@ -25,6 +28,10 @@ thetime = 0
 seedint = 0
 seedstep = 0
 seedhash = ''
+quiet = True 
+
+def notify(message):
+    sys.stderr.write(message)
 
 def lget(list, index, default=True):
     """ Safely return a selected element from a list and handle IndexErrors """
@@ -108,13 +115,14 @@ def timer(cmd='start'):
     global thetime
     if cmd == 'start':
         thetime = time.time()
-        print 'Started render at timestamp', thetime
+
+        if not quiet: print 'Started render at timestamp', thetime
         return thetime 
     elif cmd == 'stop':
         thetime = time.time() - thetime
         themin = int(thetime) / 60
         thesec = thetime - (themin * 60)
-        print 'Render time:', themin, 'min', thesec, 'sec'
+        if not quiet: print 'Render time:', themin, 'min', thesec, 'sec'
         return thetime
 
 def transpose(audio_string, amount):
@@ -556,7 +564,7 @@ def read(filename):
     """ Read a 44.1k / 16bit WAV file from disk with the Python wave module. 
         Mono files are converted to stereo automatically. """
     filename = snddir + filename
-    print 'loading', filename
+    if not quiet: print 'loading', filename
 
     file = wave.open(filename, "r")
     file_frames = file.readframes(file.getnframes())
@@ -575,11 +583,19 @@ def read(filename):
 
     return snd
 
-def play(out=''):
-    """ A silly alsa-dependent hack to enable another silly hack """
+def poly(p, a=[]):
+    p = Process(target=p, args=(a,))
+    p.start()
+
+    return p 
+
+def play(out='', cache=False):
+    """ A silly hack to enable another silly hack """
+    if cache: filename = cache(out)
+
     shhh = open(os.devnull, 'w')
-    filename = cache(out)
-    p = subprocess.Popen(['aplay', '-f', 'cd', filename], shell=False, stdout=shhh, stderr=shhh)
+    s = subprocess.Popen(['aplay', '-q', '-f', 'cd'], stdin=subprocess.PIPE, stdout=shhh, stderr=shhh)
+    s.communicate(out)
     shhh.close()
 
     return out
@@ -598,6 +614,9 @@ def stream(outs=['']):
     shhh.close()
 
     return outs
+
+def args():
+    return [arg for arg in sys.argv if arg != '']
 
 def insert_into(haystack, needle, position):
     # split string at position index
