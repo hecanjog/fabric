@@ -53,6 +53,9 @@ def load(f='poems.txt'):
 
     return poem
 
+def rchoose(word, l):
+    return l[int(rword(word) * (len(l)-1))]
+
 def rword(word, low=0.0, high=1.0, recurse=True):
     global crword
 

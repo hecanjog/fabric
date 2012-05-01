@@ -2,19 +2,16 @@ import dsp
 import wes
 
 def play(args):
-    freqs = [1,3,5]
-    octave =3 
+    freqs = [1,8]
+    octave = 4 
     pre = []
-    length = dsp.stf(1)
-    reps = 1
+    length = dsp.stf(30)
+    reps = 'n' 
     volume = 1
-    sounds = args.pop(0) 
-    sounds = [sounds.va.data, sounds.vb.data, sounds.vc.data, sounds.vd.data, sounds.ve.data, sounds.vf.data, sounds.vg.data]
-    violin = ''
+    pdevice = 'T6_pair1' 
 
     for arg in args:
         a = arg.split(':')
-
         if a[0] == 'f':
             freqs = a[1].split('.')
             freqs = [int(f) for f in freqs]
@@ -26,10 +23,7 @@ def play(args):
             length = dsp.stf(float(a[1]))
 
         if a[0] == 'r':
-            reps = int(a[1])
-
-        if a[0] == 'p':
-            prerender = True
+            reps = 'y' 
 
         if a[0] == 'v':
             volume = float(a[1]) / 100.0
@@ -37,21 +31,27 @@ def play(args):
         if a[0] == 's':
             violin = sounds[ord(a[1]) - 97]
 
+        if a[0] == 'c':
+            if int(a[1]) < len(dsp.io):
+                if int(a[1]) > 0 and int(a[1]) <= len(dsp.io):
+                    pdevice = dsp.io[int(a[1]) - 1]
+
     freqs = [wes.scale[i - 1] * ( octave / 4.0 ) for i in freqs]
 
     dsp.dsp_grain *= 4
     line = wes.readline()
 
-    for word in line: 
-        vstart = int(wes.rword(word) * 44100)
-        if violin == '':
-            violin = sounds[int(wes.rword(word) * (len(sounds)-1))]
-        v = dsp.cut(violin, vstart, length / len(line))
-        v = dsp.mix([dsp.fill(dsp.transpose(v, f), length / len(line)) for f in freqs])
-        v = dsp.env(v, 'sine', False, volume)
+    violin = dsp.rec(dsp.stf(2), dsp.io[0])
 
-        v *= reps
+    for word in line: 
+        if reps == 'y':
+            violin = dsp.rec(dsp.stf(2), dsp.io[0])
+
+        vstart = int(wes.rword(word) * 44100)
+        v = dsp.mix([dsp.fill(dsp.env(dsp.cut(violin, vstart, dsp.mstf(wes.rword(word) * 1500 + 500)), 'sine'), length) for layer in range(10)])
+        v = dsp.mix([dsp.fill(dsp.transpose(v, f), length) for f in freqs])
+        v = dsp.env(v, 'sine', False, volume)
             
-        dsp.play(v)
+        dsp.play(v, pdevice)
 
     dsp.dsp_grain /= 4

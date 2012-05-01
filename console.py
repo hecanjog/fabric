@@ -3,15 +3,18 @@ import subprocess
 import os
 import dsp
 import wes
-import sounds
 
 dsp.quiet = True
+dsp.io = [ 
+        #'Intel', 
+        'T6_pair1', 
+        'T6_pair2',
+        'T6_pair3',
+]
 
 class Fabric(cmd.Cmd):
     prompt = 'fabric: '
     intro = 'A just-in-realtime console.'
-
-    poempos = 0
 
     def play(self, cmd):
         orcs = os.listdir('orc/')
@@ -20,16 +23,12 @@ class Fabric(cmd.Cmd):
                 cmd.pop(0)
                 orc = 'orc.' + orc.split('.')[0]
                 p = __import__(orc, globals(), locals(), ['play'])
-                process = dsp.poly(p.play, [sounds] + cmd + ['l:' + str(self.poempos)])
+                process = dsp.poly(p.play, cmd)
 
                 print 'playing', orc, cmd
                 return True
 
         print 'not found'
-
-    def do_swell(self, cmd):
-        orcswell = __import__('orc.swell', globals(), locals(), ['play'])
-        dsp.poly(orcswell.play, [sounds] + cmd.split(' '))
 
     def default(self, cmd):
         self.play(cmd.split(' '))

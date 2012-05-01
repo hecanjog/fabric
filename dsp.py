@@ -29,6 +29,8 @@ seedint = 0
 seedstep = 0
 seedhash = ''
 quiet = True 
+io = ['Intel']
+mode = 'rec'
 
 def notify(message):
     sys.stderr.write(message)
@@ -589,12 +591,30 @@ def poly(p, a=[]):
 
     return p 
 
-def play(out='', cache=False):
+def rec(length=44100, pdevice=io[0]):
+    length = int(fts(length))
+    shhh = open(os.devnull, 'w')
+    filename = str(rand()) + '.wav'
+    s = subprocess.Popen('arecord -c 1 -t wav -d ' + str(length) + ' -q -f cd -D ' + pdevice + ' /home/hecanjog/code/fabric/sounds/rec/' + filename, shell=True)
+    shhh.close()  
+
+    while s.wait() > 0:
+        pass
+
+    out = read('sounds/rec/' + filename)
+    out = mixstereo([out.data, out.data])
+
+    return out
+    
+def play(out='', pdevice='vary', cache=False, ralgo=randchoose):
     """ A silly hack to enable another silly hack """
     if cache: filename = cache(out)
 
+    if pdevice == 'vary':
+        pdevice = ralgo(io)
+
     shhh = open(os.devnull, 'w')
-    s = subprocess.Popen(['aplay', '-q', '-f', 'cd'], stdin=subprocess.PIPE, stdout=shhh, stderr=shhh)
+    s = subprocess.Popen(['aplay', '-q', '-f', 'cd', '-D', pdevice], stdin=subprocess.PIPE, stdout=shhh, stderr=shhh)
     s.communicate(out)
     shhh.close()
 

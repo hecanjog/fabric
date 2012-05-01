@@ -2,13 +2,12 @@ import dsp
 import wes
 
 def play(args):
-    sounds = args.pop(0)
-    sounds = [sounds.va.data, sounds.vb.data, sounds.vc.data, sounds.vd.data, sounds.ve.data, sounds.vf.data, sounds.vg.data]
-    length = dsp.stf(1)
-    m = 20
-    d = 3
+    length = dsp.stf(30)
+    pdevice = 'T6_pair3'
+    m = 100
+    d = 5 
     volume = 1.0
-    violin = ''
+    violin = dsp.rec(dsp.stf(2), dsp.io[0])
 
     for arg in args:
         a = arg.split(':')
@@ -28,14 +27,15 @@ def play(args):
         if a[0] == 'd':
             d = float(a[1])
 
+        if a[0] == 'c':
+            if int(a[1]) < len(dsp.io):
+                pdevice = dsp.io[int(a[1])]
+
 
     elapsed = 0
     while elapsed < length:
         line = wes.readline()
         for word in line:
-            if violin == '':
-                violin = sounds[int(wes.rword(word) * (len(sounds)-1))]
-
             vstart = int(wes.rword(word) * (dsp.flen(violin) - (length / len(line))))
             v = dsp.cut(violin, vstart, length / len(line))
 
@@ -63,6 +63,6 @@ def play(args):
 
             out = dsp.pad(''.join(grains), 0, wordpad)
 
-            dsp.play(out)
+            dsp.play(out, pdevice)
        
             elapsed += dsp.flen(out)
