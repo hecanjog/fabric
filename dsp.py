@@ -13,6 +13,7 @@ import string
 import time
 import hashlib
 import subprocess
+import platform
 from multiprocessing import Process, Queue 
 import os
 import sys
@@ -592,10 +593,23 @@ def poly(p, a=[]):
     return p 
 
 def rec(length=44100, pdevice=io[0]):
+    """ As you might gather from the hardcoded paths refering to 
+        directories on my machines, this isn't ready for public 
+        consumption yet! Who am I even writing to right now anyhow?
+        Echo... echo... echo...
+    """
+
     length = int(fts(length))
     shhh = open(os.devnull, 'w')
     filename = str(rand()) + '.wav'
-    s = subprocess.Popen('arecord -c 1 -t wav -d ' + str(length) + ' -q -f cd -D ' + pdevice + ' /home/hecanjog/code/fabric/sounds/rec/' + filename, shell=True)
+
+    if platform.system() == 'Linux':
+        s = subprocess.Popen('arecord -c 1 -t wav -d ' + str(length) + ' -q -f cd -D ' + pdevice + ' /home/hecanjog/code/fabric/sounds/rec/' + filename, shell=True)
+    elif platform.system() == 'Darwin':
+        minutes = str(length / 60)
+        seconds = str(length % 60)
+        s = subprocess.Popen('rec -q -c 2 -b 16 /Users/hecanjog/code/fabric/sounds/rec/' + filename + ' trim 0 ' + minutes + ':' + seconds, shell=True) 
+
     shhh.close()  
 
     while s.wait() > 0:
@@ -607,14 +621,23 @@ def rec(length=44100, pdevice=io[0]):
     return out
     
 def play(out='', pdevice='vary', cache=False, ralgo=randchoose):
-    """ A silly hack to enable another silly hack """
+    """ A silly hack to enable another silly hack 
+        This should work is ALSA is configured on a Linux machine, 
+        and if sox is available on an OSX machine - though device 
+        switching under OSX is unimplemented at the moment
+    """
     if cache: filename = cache(out)
 
     if pdevice == 'vary':
         pdevice = ralgo(io)
 
     shhh = open(os.devnull, 'w')
-    s = subprocess.Popen(['aplay', '-q', '-f', 'cd', '-D', pdevice], stdin=subprocess.PIPE, stdout=shhh, stderr=shhh)
+
+    if platform.system() == 'Linux':
+        s = subprocess.Popen(['aplay', '-q', '-f', 'cd', '-D', pdevice], stdin=subprocess.PIPE, stdout=shhh, stderr=shhh)
+    elif platform.system() == 'Darwin':
+        s = subprocess.Popen(['play', '-q', '-'], stdin=subprocess.PIPE, stdout=shhh, stderr=shhh)
+
     s.communicate(out)
     shhh.close()
 
