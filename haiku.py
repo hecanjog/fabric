@@ -1,41 +1,28 @@
 import dsp
+import math
 
-dsp.timer('start')
-dsp.seed('snow show')
+def pop(u, out=''):
+    x = dsp.rand(0.1, 0.5) 
+    m = dsp.rand(0.03, 5.5) 
+    r = dsp.rand(3.765, 3.8)
+    l = dsp.randint(10, u) 
 
-# After Meg's birthday
+    for t in range(l):
+        b = ''
+        x = r * x * (1.0 - x)
+        s = int(math.fabs(x) * x * 100 + 4)
 
-fourth = 2**(5/12.0) - 1
-scale = [2 - i * fourth for i in range(1, 6)]
+        for i in range(s):
+            b += dsp.pad(dsp.pack(i / float(s)) * 2, 0, int(s * 0.5 + (i * m)))
 
-def ring():
-    arps = [dsp.mix([dsp.env(gamut[i % len(gamut)], 'sine'), dsp.env(dsp.randchoose(cgamut), 'sine')]) for i in range(75)]
-    arps = [dsp.cut(a, dsp.randint(0, dsp.flen(a)), dsp.randint(4410, 44100 * 3)) for a in arps]
-    arps = [dsp.pan(a, dsp.rand()) for a in arps]
-    arps = [dsp.amp(a, dsp.rand()) for a in arps]
-    arps = [dsp.fill(a, dsp.stf(20)) for a in arps]
-    arps = [dsp.benv(a, [dsp.rand() for i in range(dsp.randint(5, 50))]) for a in arps]
-    arps = dsp.mix(arps, True, 40.0)
+        print x
+        out += dsp.pan(b, x)
 
-    return arps
+    return out
 
-g = dsp.read('sounds/hcj.samples.tones/cyclohit.wav')
-last = dsp.read('sounds/hcj.samples.tones/last.wav')
-lastb = dsp.read('sounds/hcj.samples.tones/nick220.wav')
+out  = dsp.mix([pop(50) for p in range(2)], True, 1)
+out += dsp.mix([pop(10) for p in range(10)], True, 30)
+out += dsp.mix([pop(20) for p in range(10)], True, 30)
+out += dsp.mix([pop(300) for p in range(3)], True, 2)
 
-gamut = [dsp.transpose(last.data, s) for s in scale]
-cgamut = [dsp.transpose(lastb.data, s) for s in scale]
-
-out = g.data
-out += ''.join([ring() for r in range(8)])
-
-vc = dsp.read('sounds/violin-c.wav')
-vd = dsp.read('sounds/violin-d.wav')
-gamut = [dsp.transpose(vc.data, s) for s in scale]
-cgamut = [dsp.transpose(vd.data, s) for s in scale]
-
-out = dsp.mix([dsp.env(''.join([ring() for r in range(8)]), 'line'), out], False)
-out += lastb.data
-
-print dsp.write(out, 'haiku-12-03-14-snow-show', False)
-dsp.timer('stop')
+dsp.write(out, 'pop')
