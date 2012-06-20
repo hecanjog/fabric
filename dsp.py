@@ -307,12 +307,14 @@ def breakpoint(values, size=512):
 
     return groups
 
-def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
+
+
+def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0, rf = rand):
     wtable = []
     wave_types = ["sine", "gauss", "cos", "line", "saw", "impulse", "phasor", "sine2pi", "cos2pi", "vary", "flat"]
 
     if wtype == "random":
-        wtype = wave_types[randint(0, len(wave_types) - 1)]
+        wtype = wave_types[int(rf(0, len(wave_types) - 1))]
 
     if wtype == "sine":
         wtable = [math.sin(i * math.pi) * (highval - lowval) + lowval for i in frange(size, 1.0, 0.0)]
@@ -359,9 +361,9 @@ def wavetable(wtype="sine", size=512, highval=1.0, lowval=0.0):
         if size < 32:
             bsize = size
         else:
-            bsize = size / randint(2, 16)
+            bsize = size / int(rf(2, 16))
 
-        btable = [ [wave_types[randint(0, len(wave_types)-1)], rand(lowval, highval)] for i in range(bsize) ]
+        btable = [ [wave_types[int(rf(0, len(wave_types)-1))], rf(lowval, highval)] for i in range(bsize) ]
 
         if len(btable) > 0:
             btable[0] = lowval
@@ -509,6 +511,14 @@ def ftc(frames):
     frames *= audio_params[0] # num chans
 
     return frames
+
+def fth(frames):
+    """ frames to hz """
+    if frames > 0:
+        return (1.0 / frames) * audio_params[2]
+
+    return 0
+
 
 def htf(hz):
     """ hz to frames """
