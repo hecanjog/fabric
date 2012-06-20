@@ -1,32 +1,14 @@
 import dsp
+import math
 
 dsp.timer('start')
 
 class Orc:
-    snds = [
-            dsp.read('sounds/dig1.wav').data,
-            dsp.read('sounds/dig2.wav').data,
-            dsp.read('sounds/dig3.wav').data,
-            dsp.read('sounds/dig4.wav').data,
-            dsp.read('sounds/dig5.wav').data,
-           ]
+    cpop = 0.444
 
-    scale = [
-                1.0 / 1.0,
-                16.0 / 15.0,
-                10.0 / 9.0,
-                6.0 / 5.0,
-                5.0 / 4.0,
-                4.0 / 3.0,
-                64.0 / 45.0,
-                3.0 / 2.0,
-                8.0 / 5.0,
-                27.0 / 16.0,
-                16.0 / 9.0,
-                15.0 / 8.0,
-            ]
-
-    def pop(self, x=0.5, r=3.765, i=30):
+    def pop(self, i=30):
+        x = self.rpop(0.1, 0.9)
+        r = self.rpop(3.765, 3.9)
         out = []
         for t in range(i):
             x = r * x * (1.0 - x)
@@ -34,56 +16,42 @@ class Orc:
 
         return out 
 
-    def mirror(self, l):
-        a = l[:len(l)/2 + 1]
-        b = a[:]
-        b.reverse()
-        t = len(l)
-        l = a + b
+    def rpop(self, low, high):
+        self.cpop = 3.77 * self.cpop * (1.0 - self.cpop)
+        
+        return self.cpop * (high - low) + low
 
-        if len(l) > t:
-            return l[:t]   
-
-        return l
-
-    def train(self, snd, seed, length, hz):
-        pitches = [ self.scale[p - 1] for p in [1,3,5,7,5,3,1] ]
-
+    def train(self, length, hz):
         num = int(length / dsp.htf(hz))
 
-        amp = self.mirror(self.pop(seed * 0.5, 3.8, num))
-        speed = self.mirror([ 7.0 / pitches[int(s * 7)] for s in self.pop(seed * 0.125, 3.8, num) ])
-        width = self.mirror(dsp.wavetable('random', num)) # Okay, one 'random' part! So it goes.
-        pan = self.mirror(self.pop(seed * 0.75, 3.8, num))
-        pos = [ int((dsp.flen(snd) - hz) * s) for s in dsp.wavetable('line', num) ]
+        print dsp.fts(length), hz
 
-        return ''.join([ self.impulse(snd, amp[i], speed[i], width[i], pan[i], pos[i], hz) for i in range(num) ])
+        amp = self.pop(num)
+        wtables = ['gauss', 'line', 'phasor'] + ['vary' for v in range(12)]
+        width = dsp.wavetable(wtables[int(self.rpop(0, 14))], num, self.rpop(0.0, 2.5), self.rpop(2.5, 5.0), self.rpop) # Not random anymore, yay!
+        pan = self.pop(num)
 
-    def impulse(self, snd, amp, speed, width, pan, pos, hz):
-        target = hz
-        hz = int(hz * (1.0 / speed))
-        width = int(hz * width)
+        return ''.join([ self.impulse(amp[i], width[i], pan[i], hz) for i in range(num) ])
 
-        snd = dsp.cut(snd, pos, hz)
+    def impulse(self, amp, width, pan, hz):
+        width = int(dsp.htf(hz) * math.fabs(width))
+
+        snd = dsp.cycle(dsp.fth(width))
         snd = dsp.amp(snd, amp)
         snd = dsp.pan(snd, pan)
-        snd = dsp.transpose(snd, speed)
-        snd = dsp.cut(snd, 0, width)
-        snd = dsp.env(snd, 'sine', True)
-        snd = dsp.pad(snd, 0, hz - width)
+        snd = dsp.pad(snd, 0, dsp.htf(hz) - dsp.flen(snd))
 
         return snd
 
 orc = Orc()
 
-def seq(num, seedseed):
-    seed = orc.pop(seedseed, 3.9, num)
-    length = [ dsp.stf(5) * p + dsp.mstf(10) for p in orc.pop(seedseed * 0.8, 3.85, num) ]
-    hz = [ 1100 * p + 1 for p in orc.pop(seedseed * 0.3, 3.8, num) ]
+def seq(num):
+    length = [ dsp.mstf(orc.rpop(300, 3000)) * p + dsp.mstf(orc.rpop(1, 300)) for p in orc.pop(num) ]
+    hz = [ orc.rpop(200, 1000) * p + orc.rpop(1, 200) for p in orc.pop(num) ]
 
-    return ''.join([ orc.train(orc.snds[i % 5], seed[i], length[i], hz[i]) for i in range(num) ])
+    return ''.join([ orc.train(length[i], hz[i]) for i in range(num) ])
 
-out = dsp.mix([seq(40, (i + 1) / 4.0) for i in range(4)], False, 3.0)
+out = dsp.mix([seq(40) for o in range(2)], False)
      
-print dsp.write(out, 'palindrone')
+print dsp.write(out, 'popopop')
 dsp.timer('stop')
