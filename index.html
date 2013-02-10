@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>Fabric by hecanjog</title>
-    
+
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
@@ -17,78 +17,26 @@
       <header>
         <h1>Fabric</h1>
         <p>Music with the Python standard library.</p>
+
         <p class="view"><a href="https://github.com/hecanjog/fabric">View the Project on GitHub <small>hecanjog/fabric</small></a></p>
+
+
         <ul>
           <li><a href="https://github.com/hecanjog/fabric/zipball/master">Download <strong>ZIP File</strong></a></li>
           <li><a href="https://github.com/hecanjog/fabric/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/hecanjog/fabric">Fork On <strong>GitHub</strong></a></li>
+          <li><a href="https://github.com/hecanjog/fabric">View On <strong>GitHub</strong></a></li>
         </ul>
       </header>
       <section>
-        <h1>Fabric</h1>
+        <h2>Feb 2013: Fabric has been renamed to Pippi and moved</h2>
 
-<p><a href="http://github.com/hecanjog/fabric/">Fabric source on github</a></p>
+<p><a href="http://github.com/hecanjog/pippi">Find Pippi here</a></p>
 
-<p>Fabric is a computer music system written with the Python v2.x standard library.
-It is intended to be used for offline/non-realtime computer music composition. </p>
+<h3>Why?</h3>
 
-<p>It aims to be highly portable, hackable, understandable and powerful. </p>
+<p>There is already a well known (unrelated) python package called Fabric!</p>
 
-<p>Documentation is sparse at the moment, but you can check out the example score.py 
-script for an overview of some features.</p>
-
-<p>The system currently implements simple wavetable synthesis and provides tools for
-processing sound in the time domain. Frequency domain tools may be added if the 
-author learns how that darn FFT works, or when support for pluggable DSP engines 
-is implemented in version 3.</p>
-
-<h2>Fabric quickstart</h2>
-
-<p>Generate a stereo 30 second sinewave at 300hz and save it
-as sinewave.wav</p>
-
-<pre><code>import dsp
-
-out = dsp.tone(length=dsp.stf(30), freq=300.0, wavetype='sine2pi')
-
-dsp.write(out, filename='sinewave', timestamp=False)
-</code></pre>
-
-<h2>Fabric Roadmap</h2>
-
-<h3>Version 1</h3>
-
-<ul>
-<li>Full test coverage</li>
-<li>Standardized install process</li>
-<li>Document install process</li>
-<li>Document template score to show:
-
-<ul>
-<li>Loading and manipulating sounds</li>
-<li>Layering, gain adjustment, basic editing</li>
-<li>Synthesis and wavetable generation</li>
-<li>Rendering</li>
-</ul>
-</li>
-<li>All methods w/at least stub docstring description</li>
-</ul><h3>Version 2</h3>
-
-<ul>
-<li>Optimize codebase (find speed bottlenecks and eliminate where possible)</li>
-<li>Fully document source</li>
-<li>First tutorials for the absolute beginner 
-(Draw from Miller Puckett's PD book, David Cottle's SC book, FLOSS Manuals PD book)</li>
-<li>Expand synthesis capabilities: FM, etc</li>
-<li>Expand 'high level' functionality: compression, reverb?</li>
-</ul><h3>The Future...</h3>
-
-<ul>
-<li>Integration with <a href="http://wiki.sugarlabs.org">Sugar</a> environment</li>
-<li>Explore plugin system for modular synthesis engines (libpd, csound, supercollider, etc)</li>
-<li>Full lesson plans for age groups Logo is targeted toward</li>
-<li>Complete support for all major platforms</li>
-</ul>
+<p>Pippi now also includes an optional 'realtime' (and linux-only) command-based performance layer.</p>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/hecanjog">hecanjog</a></p>
@@ -96,5 +44,6 @@ dsp.write(out, filename='sinewave', timestamp=False)
       </footer>
     </div>
     <script src="javascripts/scale.fix.js"></script>
+    
   </body>
 </html>
